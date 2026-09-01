@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
@@ -18,6 +19,8 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto addUser(UserDto userDto) {
@@ -32,7 +35,7 @@ public class UserServiceImpl implements IUserService {
         user.setEmail(userDto.getEmail());
 
         // For now
-        user.setPasswordHash(userDto.getPassword());
+        user.setPasswordHash(passwordEncoder.encode(userDto.getPassword()));
 
         // Find Role using roleId
         Role role = roleRepository.findById(userDto.getRoleId())

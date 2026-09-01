@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 public class CardTypeServiceImpl implements ICardTypeService {
 
     private final CardTypeRepository cardTypeRepository;
-    private final IdGenerationUtil idGenerationUtil;
+  //  private final IdGenerationUtil idGenerationUtil;
 
-    public CardTypeServiceImpl(CardTypeRepository cardTypeRepository,
-                               IdGenerationUtil idGenerationUtil) {
+    public CardTypeServiceImpl(CardTypeRepository cardTypeRepository
+                               ) {
         this.cardTypeRepository = cardTypeRepository;
-        this.idGenerationUtil = idGenerationUtil;
+        
     }
 
     @Override
@@ -24,7 +24,7 @@ public class CardTypeServiceImpl implements ICardTypeService {
         String cardTypeId;
 
         do {
-            cardTypeId = idGenerationUtil.generateCardTypeId();
+            cardTypeId = IdGenerationUtil.generateCardTypeId();
         } while (cardTypeRepository.existsById(cardTypeId));
 
         CardType cardType = new CardType();

@@ -1,13 +1,14 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-
-import java.math.BigDecimal;
 
 public class CardTypeDto {
 
@@ -22,12 +23,16 @@ public class CardTypeDto {
     private String typeName;
 
     @NotNull(message = "Credit limit is required")
-    @PositiveOrZero(message = "Credit limit cannot be negative")
+    @DecimalMin(value = "10000.0", message = "Credit limit must be at least ₹10,000")
+    @DecimalMax(value = "2000000.0", message = "Credit limit cannot exceed ₹20,00,000")
     private BigDecimal creditLimit;
 
     @NotNull(message = "Interest rate is required")
-    @PositiveOrZero(message = "Interest rate cannot be negative")
+    @DecimalMin(value = "1.0", message = "Interest rate must be at least 1%")
+    @DecimalMax(value = "42.0", message = "Interest rate cannot exceed 42% (typical credit card range)")
     private BigDecimal interestRate;
+
+
 
     @NotNull(message = "Reward rate is required")
     @PositiveOrZero(message = "Reward rate cannot be negative")

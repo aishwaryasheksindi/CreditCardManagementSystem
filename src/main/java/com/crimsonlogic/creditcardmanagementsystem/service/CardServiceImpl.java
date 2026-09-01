@@ -16,17 +16,17 @@ public class CardServiceImpl implements ICardService {
     private final CardRepository cardRepository;
     private final CustomerRepository customerRepository;
     private final CardTypeRepository cardTypeRepository;
-    private final IdGenerationUtil idGenerationUtil;
+//    private final IdGenerationUtil idGenerationUtil;
 
     public CardServiceImpl(CardRepository cardRepository,
                            CustomerRepository customerRepository,
-                           CardTypeRepository cardTypeRepository,
-                           IdGenerationUtil idGenerationUtil) {
+                           CardTypeRepository cardTypeRepository
+                           ) {
 
         this.cardRepository = cardRepository;
         this.customerRepository = customerRepository;
         this.cardTypeRepository = cardTypeRepository;
-        this.idGenerationUtil = idGenerationUtil;
+        
     }
 
     @Override
@@ -35,7 +35,7 @@ public class CardServiceImpl implements ICardService {
         String cardId;
 
         do {
-            cardId = idGenerationUtil.generateCardId();
+            cardId = IdGenerationUtil.generateCardId();
         } while (cardRepository.existsById(cardId));
 
         Customer customer = customerRepository.findById(cardDto.getCustomerId())

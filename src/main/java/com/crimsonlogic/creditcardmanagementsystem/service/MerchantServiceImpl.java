@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 public class MerchantServiceImpl implements IMerchantService {
 
     private final MerchantRepository merchantRepository;
-    private final IdGenerationUtil idGenerationUtil;
+ //   private final IdGenerationUtil idGenerationUtil;
 
-    public MerchantServiceImpl(MerchantRepository merchantRepository,
-                               IdGenerationUtil idGenerationUtil) {
+    public MerchantServiceImpl(MerchantRepository merchantRepository
+                               ) {
         this.merchantRepository = merchantRepository;
-        this.idGenerationUtil = idGenerationUtil;
+        
     }
 
     @Override
@@ -24,7 +24,7 @@ public class MerchantServiceImpl implements IMerchantService {
         String merchantId;
 
         do {
-            merchantId = idGenerationUtil.generateMerchantId();
+            merchantId = IdGenerationUtil.generateMerchantId();
         } while (merchantRepository.existsById(merchantId));
 
         Merchant merchant = new Merchant();

@@ -19,20 +19,20 @@ public class TransactionServiceImpl implements ITransactionService {
     private final CardRepository cardRepository;
     private final MerchantRepository merchantRepository;
     private final TransactionCategoryRepository categoryRepository;
-    private final IdGenerationUtil idGenerationUtil;
+  //  private final IdGenerationUtil idGenerationUtil;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             CardRepository cardRepository,
             MerchantRepository merchantRepository,
-            TransactionCategoryRepository categoryRepository,
-            IdGenerationUtil idGenerationUtil) {
+            TransactionCategoryRepository categoryRepository
+            ) {
 
         this.transactionRepository = transactionRepository;
         this.cardRepository = cardRepository;
         this.merchantRepository = merchantRepository;
         this.categoryRepository = categoryRepository;
-        this.idGenerationUtil = idGenerationUtil;
+       
     }
 
     @Override
@@ -42,7 +42,7 @@ public class TransactionServiceImpl implements ITransactionService {
         String transactionId;
 
         do {
-            transactionId = idGenerationUtil.generateTransactionId();
+            transactionId = IdGenerationUtil.generateTransactionId();
         } while (transactionRepository.existsById(transactionId));
 
 

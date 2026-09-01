@@ -13,16 +13,16 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
 
     private final CardStatusHistoryRepository cardStatusHistoryRepository;
     private final CardRepository cardRepository;
-    private final IdGenerationUtil idGenerationUtil;
+//    private final IdGenerationUtil idGenerationUtil;
 
     public CardStatusHistoryServiceImpl(
             CardStatusHistoryRepository cardStatusHistoryRepository,
-            CardRepository cardRepository,
-            IdGenerationUtil idGenerationUtil) {
+            CardRepository cardRepository
+       ) {
 
         this.cardStatusHistoryRepository = cardStatusHistoryRepository;
         this.cardRepository = cardRepository;
-        this.idGenerationUtil = idGenerationUtil;
+       
     }
 
     @Override
@@ -33,7 +33,7 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
 
         do {
             cardStatusHistoryId =
-                    idGenerationUtil.generateCardStatusHistoryId();
+                    IdGenerationUtil.generateCardStatusHistoryId();
         } while (cardStatusHistoryRepository.existsById(cardStatusHistoryId));
 
         Card card = cardRepository

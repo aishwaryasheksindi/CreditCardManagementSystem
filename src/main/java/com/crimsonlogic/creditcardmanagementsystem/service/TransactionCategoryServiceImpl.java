@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 public class TransactionCategoryServiceImpl implements ITransactionCategoryService {
 
     private final TransactionCategoryRepository categoryRepository;
-    private final IdGenerationUtil idGenerationUtil;
+ //   private final IdGenerationUtil idGenerationUtil;
 
-    public TransactionCategoryServiceImpl(TransactionCategoryRepository categoryRepository,
-                               IdGenerationUtil idGenerationUtil) {
+    public TransactionCategoryServiceImpl(TransactionCategoryRepository categoryRepository
+                               ) {
         this.categoryRepository = categoryRepository;
-        this.idGenerationUtil = idGenerationUtil;
+        
     }
 
     @Override
@@ -24,7 +24,7 @@ public class TransactionCategoryServiceImpl implements ITransactionCategoryServi
         String categoryId;
 
         do {
-            categoryId = idGenerationUtil.generateCategoryId();
+            categoryId = IdGenerationUtil.generateCategoryId();
         } while (categoryRepository.existsById(categoryId));
 
         TransactionCategory category = new TransactionCategory();
