@@ -6,16 +6,16 @@ public class LoginResponse {
 
     private String token;
     private String username;
-    private String roleCode;
+    private String roleName;
     private Date expiresAt;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, String username, String roleCode, Date expiresAt) {
+    public LoginResponse(String token, String username, String roleName, Date expiresAt) {
         this.token = token;
         this.username = username;
-        this.roleCode = roleCode;
+        this.roleName = roleName;
         this.expiresAt = expiresAt;
     }
 
@@ -35,12 +35,20 @@ public class LoginResponse {
         this.username = username;
     }
 
-    public String getRoleCode() {
-        return roleCode;
+    public String getRoleName() {
+        return roleName;
     }
 
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getRole() {
+        return roleName;
+    }
+
+    public void setRole(String role) {
+        this.roleName = role;
     }
 
     public Date getExpiresAt() {

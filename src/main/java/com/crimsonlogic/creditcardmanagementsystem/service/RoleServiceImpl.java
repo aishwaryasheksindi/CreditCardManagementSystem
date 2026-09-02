@@ -1,12 +1,11 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.crimsonlogic.creditcardmanagementsystem.dto.RoleDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
+import org.springframework.stereotype.Service;
 
 @Service
 public class RoleServiceImpl implements IRoleService {
@@ -24,7 +23,6 @@ public class RoleServiceImpl implements IRoleService {
 
         role.setRoleId(IdGenerationUtil.generateRoleId());
         role.setRoleName(roleDto.getRoleName());
-        role.setRoleCode(roleDto.getRoleCode());
         role.setDescription(roleDto.getDescription());
 
         Role savedRole = roleRepository.save(role);
@@ -33,7 +31,6 @@ public class RoleServiceImpl implements IRoleService {
 
         responseDto.setRoleId(savedRole.getRoleId());
         responseDto.setRoleName(savedRole.getRoleName());
-        responseDto.setRoleCode(savedRole.getRoleCode());
         responseDto.setDescription(savedRole.getDescription());
 
         return responseDto;
@@ -43,13 +40,12 @@ public class RoleServiceImpl implements IRoleService {
     public RoleDto getRoleById(String roleId) {
 
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         RoleDto responseDto = new RoleDto();
 
         responseDto.setRoleId(role.getRoleId());
         responseDto.setRoleName(role.getRoleName());
-        responseDto.setRoleCode(role.getRoleCode());
         responseDto.setDescription(role.getDescription());
 
         return responseDto;

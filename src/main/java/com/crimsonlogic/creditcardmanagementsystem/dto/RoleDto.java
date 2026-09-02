@@ -9,17 +9,10 @@ public class RoleDto {
 
     @NotBlank(message = "Role name is required")
     @Pattern(
-        regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$",
-        message = "Role name must contain only letters and spaces"
+        regexp = "^[A-Z_]+$",
+        message = "Role name must contain only uppercase letters and underscores"
     )
     private String roleName;
-
-    @NotBlank(message = "Role code is required")
-    @Pattern(
-        regexp = "^[A-Z_]+$",
-        message = "Role code must contain only uppercase letters and underscores"
-    )
-    private String roleCode;
 
     @NotBlank(message = "Role description is required")
     private String description;
@@ -27,10 +20,9 @@ public class RoleDto {
     public RoleDto() {
     }
 
-    public RoleDto(String roleId, String roleName, String roleCode, String description) {
+    public RoleDto(String roleId, String roleName, String description) {
         this.roleId = roleId;
         this.roleName = roleName;
-        this.roleCode = roleCode;
         this.description = description;
     }
 
@@ -48,14 +40,6 @@ public class RoleDto {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
     }
 
     public String getDescription() {

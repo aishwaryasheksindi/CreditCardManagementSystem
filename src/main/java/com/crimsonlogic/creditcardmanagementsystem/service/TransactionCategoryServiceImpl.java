@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.TransactionCategory;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionCategoryRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class TransactionCategoryServiceImpl implements ITransactionCategoryServi
 
     	TransactionCategory category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Category not found with ID: " + categoryId
                         )
                 );

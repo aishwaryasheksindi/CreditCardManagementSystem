@@ -25,15 +25,16 @@ class JwtServiceTest {
     @Test
     void testGenerateAndValidateToken() {
         String username = "admin_user";
-        String roleCode = "ADMIN";
+        String roleName = "ADMIN";
 
-        String token = jwtService.generateToken(username, roleCode);
+        String token = jwtService.generateToken(username, roleName);
 
         assertNotNull(token);
         assertFalse(token.isBlank());
 
         assertEquals(username, jwtService.extractUsername(token));
-        assertEquals(roleCode, jwtService.extractRoleCode(token));
+        assertEquals(roleName, jwtService.extractRoleName(token));
+        assertEquals(roleName, jwtService.extractRole(token));
         assertFalse(jwtService.isTokenExpired(token));
 
         UserDetails userDetails = new User(username, "password", Collections.emptyList());

@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.StatementDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Statement;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StatementRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
@@ -27,7 +28,7 @@ public class StatementServiceImpl implements IStatementService {
     public StatementDto addStatement(StatementDto statementDto) {
 
         if (!cardRepository.existsById(statementDto.getCardId())) {
-            throw new RuntimeException("Card not found with ID: " + statementDto.getCardId());
+            throw new ResourceNotFoundException("Card not found with ID: " + statementDto.getCardId());
         }
 
         String statementId;
@@ -78,7 +79,7 @@ public class StatementServiceImpl implements IStatementService {
     @Override
     public StatementDto getStatementById(String statementId) {
         Statement statement = statementRepository.findById(statementId)
-                .orElseThrow(() -> new RuntimeException("Statement not found with ID: " + statementId));
+                .orElseThrow(() -> new ResourceNotFoundException("Statement not found with ID: " + statementId));
         return convertToDto(statement);
     }
 

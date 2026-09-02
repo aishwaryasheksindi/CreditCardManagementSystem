@@ -45,13 +45,13 @@ class StaffServiceTest {
     void testAddAdmin_Success() {
         AdminDto adminDto = new AdminDto();
         adminDto.setUserId("USR1001");
-        adminDto.setName("System Admin");
-        adminDto.setPhone("9876543210");
-        adminDto.setDob(LocalDate.of(1990, 1, 1));
-        adminDto.setAddress("123 Admin St");
-        adminDto.setDesignation("Chief Administrator");
-        adminDto.setDateOfJoining(LocalDate.of(2020, 1, 1));
-        adminDto.setEmployeeStatus("ACTIVE");
+        adminDto.setEmpName("System Admin");
+        adminDto.setEmpPhone("9876543210");
+        adminDto.setEmpDob(LocalDate.of(1990, 1, 1));
+        adminDto.setEmpAddress("123 Admin St");
+        adminDto.setEmpDesignation("Chief Administrator");
+        adminDto.setEmpJoiningDate(LocalDate.of(2020, 1, 1));
+        adminDto.setEmpStatus("ACTIVE");
 
         when(userRepository.existsById("USR1001")).thenReturn(true);
         when(staffRepository.existsById(any())).thenReturn(false);
@@ -62,20 +62,20 @@ class StaffServiceTest {
         assertNotNull(result);
         assertNotNull(result.getStaffId());
         assertTrue(result.getStaffId().startsWith("STF"));
-        assertEquals("System Admin", result.getName());
+        assertEquals("System Admin", result.getEmpName());
     }
 
     @Test
     void testAddBankOfficer_SuccessWithBranchCode() {
         BankOfficerDto officerDto = new BankOfficerDto();
         officerDto.setUserId("USR1002");
-        officerDto.setName("John Officer");
-        officerDto.setPhone("9876543211");
-        officerDto.setDob(LocalDate.of(1992, 5, 10));
-        officerDto.setAddress("456 Bank Blvd");
-        officerDto.setDesignation("Senior Branch Officer");
-        officerDto.setDateOfJoining(LocalDate.of(2021, 3, 15));
-        officerDto.setEmployeeStatus("ACTIVE");
+        officerDto.setEmpName("John Officer");
+        officerDto.setEmpPhone("9876543211");
+        officerDto.setEmpDob(LocalDate.of(1992, 5, 10));
+        officerDto.setEmpAddress("456 Bank Blvd");
+        officerDto.setEmpDesignation("Senior Branch Officer");
+        officerDto.setEmpJoiningDate(LocalDate.of(2021, 3, 15));
+        officerDto.setEmpStatus("ACTIVE");
         officerDto.setBranchCode("BR-MUMBAI-01");
 
         when(userRepository.existsById("USR1002")).thenReturn(true);

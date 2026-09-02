@@ -18,41 +18,41 @@ public abstract class Staff {
 
     private String userId;
 
-    private String name;
+    private String empName;
 
-    private String phone;
+    private String empPhone;
 
-    private LocalDate dob;
+    private LocalDate empDob;
 
-    private String address;
+    private String empAddress;
 
-    private String designation;
+    private String empDesignation;
 
-    private LocalDate dateOfJoining;
+    private LocalDate empJoiningDate;
 
-    private String employeeStatus;
+    private String empStatus;
 
     public Staff() {
     }
 
     public Staff(String staffId,
                  String userId,
-                 String name,
-                 String phone,
-                 LocalDate dob,
-                 String address,
-                 String designation,
-                 LocalDate dateOfJoining,
-                 String employeeStatus) {
+                 String empName,
+                 String empPhone,
+                 LocalDate empDob,
+                 String empAddress,
+                 String empDesignation,
+                 LocalDate empJoiningDate,
+                 String empStatus) {
         this.staffId = staffId;
         this.userId = userId;
-        this.name = name;
-        this.phone = phone;
-        this.dob = dob;
-        this.address = address;
-        this.designation = designation;
-        this.dateOfJoining = dateOfJoining;
-        this.employeeStatus = employeeStatus;
+        this.empName = empName;
+        this.empPhone = empPhone;
+        this.empDob = empDob;
+        this.empAddress = empAddress;
+        this.empDesignation = empDesignation;
+        this.empJoiningDate = empJoiningDate;
+        this.empStatus = empStatus;
     }
 
     public String getStaffId() {
@@ -71,59 +71,59 @@ public abstract class Staff {
         this.userId = userId;
     }
 
-    public String getName() {
-        return name;
+    public String getEmpName() {
+        return empName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setEmpName(String empName) {
+        this.empName = empName;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getEmpPhone() {
+        return empPhone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setEmpPhone(String empPhone) {
+        this.empPhone = empPhone;
     }
 
-    public LocalDate getDob() {
-        return dob;
+    public LocalDate getEmpDob() {
+        return empDob;
     }
 
-    public void setDob(LocalDate dob) {
-        this.dob = dob;
+    public void setEmpDob(LocalDate empDob) {
+        this.empDob = empDob;
     }
 
-    public String getAddress() {
-        return address;
+    public String getEmpAddress() {
+        return empAddress;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setEmpAddress(String empAddress) {
+        this.empAddress = empAddress;
     }
 
-    public String getDesignation() {
-        return designation;
+    public String getEmpDesignation() {
+        return empDesignation;
     }
 
-    public void setDesignation(String designation) {
-        this.designation = designation;
+    public void setEmpDesignation(String empDesignation) {
+        this.empDesignation = empDesignation;
     }
 
-    public LocalDate getDateOfJoining() {
-        return dateOfJoining;
+    public LocalDate getEmpJoiningDate() {
+        return empJoiningDate;
     }
 
-    public void setDateOfJoining(LocalDate dateOfJoining) {
-        this.dateOfJoining = dateOfJoining;
+    public void setEmpJoiningDate(LocalDate empJoiningDate) {
+        this.empJoiningDate = empJoiningDate;
     }
 
-    public String getEmployeeStatus() {
-        return employeeStatus;
+    public String getEmpStatus() {
+        return empStatus;
     }
 
-    public void setEmployeeStatus(String employeeStatus) {
-        this.employeeStatus = employeeStatus;
+    public void setEmpStatus(String empStatus) {
+        this.empStatus = empStatus;
     }
 }

@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Merchant;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.MerchantRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class MerchantServiceImpl implements IMerchantService {
 
         Merchant merchant = merchantRepository.findById(merchantId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Merchant not found with ID: " + merchantId
                         )
                 );

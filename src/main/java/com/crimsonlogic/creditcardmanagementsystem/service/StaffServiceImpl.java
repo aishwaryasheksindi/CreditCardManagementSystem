@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.*;
 import com.crimsonlogic.creditcardmanagementsystem.entity.*;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.*;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class StaffServiceImpl implements IStaffService {
 
     private void validateUser(String userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User not found with ID: " + userId);
+            throw new ResourceNotFoundException("User not found with ID: " + userId);
         }
     }
 
@@ -54,13 +55,13 @@ public class StaffServiceImpl implements IStaffService {
         Admin admin = new Admin();
         admin.setStaffId(generateUniqueStaffId());
         admin.setUserId(adminDto.getUserId());
-        admin.setName(adminDto.getName());
-        admin.setPhone(adminDto.getPhone());
-        admin.setDob(adminDto.getDob());
-        admin.setAddress(adminDto.getAddress());
-        admin.setDesignation(adminDto.getDesignation());
-        admin.setDateOfJoining(adminDto.getDateOfJoining());
-        admin.setEmployeeStatus(adminDto.getEmployeeStatus());
+        admin.setEmpName(adminDto.getEmpName());
+        admin.setEmpPhone(adminDto.getEmpPhone());
+        admin.setEmpDob(adminDto.getEmpDob());
+        admin.setEmpAddress(adminDto.getEmpAddress());
+        admin.setEmpDesignation(adminDto.getEmpDesignation());
+        admin.setEmpJoiningDate(adminDto.getEmpJoiningDate());
+        admin.setEmpStatus(adminDto.getEmpStatus());
 
         Admin saved = adminRepository.save(admin);
         return convertToAdminDto(saved);
@@ -69,7 +70,7 @@ public class StaffServiceImpl implements IStaffService {
     @Override
     public AdminDto getAdminById(String staffId) {
         Admin admin = adminRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + staffId));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + staffId));
         return convertToAdminDto(admin);
     }
 
@@ -87,13 +88,13 @@ public class StaffServiceImpl implements IStaffService {
         BankOfficer officer = new BankOfficer();
         officer.setStaffId(generateUniqueStaffId());
         officer.setUserId(bankOfficerDto.getUserId());
-        officer.setName(bankOfficerDto.getName());
-        officer.setPhone(bankOfficerDto.getPhone());
-        officer.setDob(bankOfficerDto.getDob());
-        officer.setAddress(bankOfficerDto.getAddress());
-        officer.setDesignation(bankOfficerDto.getDesignation());
-        officer.setDateOfJoining(bankOfficerDto.getDateOfJoining());
-        officer.setEmployeeStatus(bankOfficerDto.getEmployeeStatus());
+        officer.setEmpName(bankOfficerDto.getEmpName());
+        officer.setEmpPhone(bankOfficerDto.getEmpPhone());
+        officer.setEmpDob(bankOfficerDto.getEmpDob());
+        officer.setEmpAddress(bankOfficerDto.getEmpAddress());
+        officer.setEmpDesignation(bankOfficerDto.getEmpDesignation());
+        officer.setEmpJoiningDate(bankOfficerDto.getEmpJoiningDate());
+        officer.setEmpStatus(bankOfficerDto.getEmpStatus());
         officer.setBranchCode(bankOfficerDto.getBranchCode());
 
         BankOfficer saved = bankOfficerRepository.save(officer);
@@ -103,7 +104,7 @@ public class StaffServiceImpl implements IStaffService {
     @Override
     public BankOfficerDto getBankOfficerById(String staffId) {
         BankOfficer officer = bankOfficerRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Bank officer not found with ID: " + staffId));
+                .orElseThrow(() -> new ResourceNotFoundException("Bank officer not found with ID: " + staffId));
         return convertToBankOfficerDto(officer);
     }
 
@@ -121,13 +122,13 @@ public class StaffServiceImpl implements IStaffService {
         FraudAnalyst analyst = new FraudAnalyst();
         analyst.setStaffId(generateUniqueStaffId());
         analyst.setUserId(fraudAnalystDto.getUserId());
-        analyst.setName(fraudAnalystDto.getName());
-        analyst.setPhone(fraudAnalystDto.getPhone());
-        analyst.setDob(fraudAnalystDto.getDob());
-        analyst.setAddress(fraudAnalystDto.getAddress());
-        analyst.setDesignation(fraudAnalystDto.getDesignation());
-        analyst.setDateOfJoining(fraudAnalystDto.getDateOfJoining());
-        analyst.setEmployeeStatus(fraudAnalystDto.getEmployeeStatus());
+        analyst.setEmpName(fraudAnalystDto.getEmpName());
+        analyst.setEmpPhone(fraudAnalystDto.getEmpPhone());
+        analyst.setEmpDob(fraudAnalystDto.getEmpDob());
+        analyst.setEmpAddress(fraudAnalystDto.getEmpAddress());
+        analyst.setEmpDesignation(fraudAnalystDto.getEmpDesignation());
+        analyst.setEmpJoiningDate(fraudAnalystDto.getEmpJoiningDate());
+        analyst.setEmpStatus(fraudAnalystDto.getEmpStatus());
 
         FraudAnalyst saved = fraudAnalystRepository.save(analyst);
         return convertToFraudAnalystDto(saved);
@@ -136,7 +137,7 @@ public class StaffServiceImpl implements IStaffService {
     @Override
     public FraudAnalystDto getFraudAnalystById(String staffId) {
         FraudAnalyst analyst = fraudAnalystRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Fraud analyst not found with ID: " + staffId));
+                .orElseThrow(() -> new ResourceNotFoundException("Fraud analyst not found with ID: " + staffId));
         return convertToFraudAnalystDto(analyst);
     }
 
@@ -154,13 +155,13 @@ public class StaffServiceImpl implements IStaffService {
         CustomerServiceAgent agent = new CustomerServiceAgent();
         agent.setStaffId(generateUniqueStaffId());
         agent.setUserId(agentDto.getUserId());
-        agent.setName(agentDto.getName());
-        agent.setPhone(agentDto.getPhone());
-        agent.setDob(agentDto.getDob());
-        agent.setAddress(agentDto.getAddress());
-        agent.setDesignation(agentDto.getDesignation());
-        agent.setDateOfJoining(agentDto.getDateOfJoining());
-        agent.setEmployeeStatus(agentDto.getEmployeeStatus());
+        agent.setEmpName(agentDto.getEmpName());
+        agent.setEmpPhone(agentDto.getEmpPhone());
+        agent.setEmpDob(agentDto.getEmpDob());
+        agent.setEmpAddress(agentDto.getEmpAddress());
+        agent.setEmpDesignation(agentDto.getEmpDesignation());
+        agent.setEmpJoiningDate(agentDto.getEmpJoiningDate());
+        agent.setEmpStatus(agentDto.getEmpStatus());
 
         CustomerServiceAgent saved = customerServiceAgentRepository.save(agent);
         return convertToCustomerServiceAgentDto(saved);
@@ -169,7 +170,7 @@ public class StaffServiceImpl implements IStaffService {
     @Override
     public CustomerServiceAgentDto getCustomerServiceAgentById(String staffId) {
         CustomerServiceAgent agent = customerServiceAgentRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Customer service agent not found with ID: " + staffId));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer service agent not found with ID: " + staffId));
         return convertToCustomerServiceAgentDto(agent);
     }
 
@@ -183,7 +184,7 @@ public class StaffServiceImpl implements IStaffService {
     @Override
     public StaffDto getStaffById(String staffId) {
         Staff staff = staffRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Staff not found with ID: " + staffId));
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with ID: " + staffId));
         return convertToGenericStaffDto(staff);
     }
 
@@ -237,12 +238,12 @@ public class StaffServiceImpl implements IStaffService {
     private void populateBaseDto(StaffDto dto, Staff staff) {
         dto.setStaffId(staff.getStaffId());
         dto.setUserId(staff.getUserId());
-        dto.setName(staff.getName());
-        dto.setPhone(staff.getPhone());
-        dto.setDob(staff.getDob());
-        dto.setAddress(staff.getAddress());
-        dto.setDesignation(staff.getDesignation());
-        dto.setDateOfJoining(staff.getDateOfJoining());
-        dto.setEmployeeStatus(staff.getEmployeeStatus());
+        dto.setEmpName(staff.getEmpName());
+        dto.setEmpPhone(staff.getEmpPhone());
+        dto.setEmpDob(staff.getEmpDob());
+        dto.setEmpAddress(staff.getEmpAddress());
+        dto.setEmpDesignation(staff.getEmpDesignation());
+        dto.setEmpJoiningDate(staff.getEmpJoiningDate());
+        dto.setEmpStatus(staff.getEmpStatus());
     }
 }

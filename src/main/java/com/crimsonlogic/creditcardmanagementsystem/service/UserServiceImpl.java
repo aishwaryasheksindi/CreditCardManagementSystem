@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
 import com.crimsonlogic.creditcardmanagementsystem.entity.User;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.UserRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
@@ -42,7 +43,7 @@ public class UserServiceImpl implements IUserService {
 
         // Find Role using roleId
         Role role = roleRepository.findById(userDto.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         user.setRole(role);
 
@@ -67,7 +68,7 @@ public class UserServiceImpl implements IUserService {
     public UserDto getUserById(String userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         UserDto responseDto = new UserDto();
 
@@ -75,6 +76,26 @@ public class UserServiceImpl implements IUserService {
         responseDto.setUsername(user.getUsername());
         responseDto.setEmail(user.getEmail());
         responseDto.setRoleId(user.getRole().getRoleId());
+        responseDto.setAccountStatus(user.getAccountStatus());
+
+        return responseDto;
+    }
+
+    @Override
+    public UserDto findByUsername(String username) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+
+        UserDto responseDto = new UserDto();
+
+        responseDto.setUserId(user.getUserId());
+        responseDto.setUsername(user.getUsername());
+        responseDto.setEmail(user.getEmail());
+        if (user.getRole() != null) {
+            responseDto.setRoleId(user.getRole().getRoleId());
+            responseDto.setRoleName(user.getRole().getRoleName());
+        }
         responseDto.setAccountStatus(user.getAccountStatus());
 
         return responseDto;

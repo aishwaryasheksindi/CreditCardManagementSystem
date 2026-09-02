@@ -4,6 +4,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Payment;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.PaymentRepository;
@@ -35,10 +36,10 @@ public class PaymentServiceImpl implements IPaymentService {
     public PaymentDto addPayment(PaymentDto paymentDto) {
 
         Card card = cardRepository.findById(paymentDto.getCardId())
-                .orElseThrow(() -> new RuntimeException("Card not found with ID: " + paymentDto.getCardId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + paymentDto.getCardId()));
 
         if (!customerRepository.existsById(paymentDto.getCustomerId())) {
-            throw new RuntimeException("Customer not found with ID: " + paymentDto.getCustomerId());
+            throw new ResourceNotFoundException("Customer not found with ID: " + paymentDto.getCustomerId());
         }
 
         String paymentId;
@@ -74,7 +75,7 @@ public class PaymentServiceImpl implements IPaymentService {
     @Override
     public PaymentDto getPaymentById(String paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new RuntimeException("Payment not found with ID: " + paymentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
         return convertToDto(payment);
     }
 

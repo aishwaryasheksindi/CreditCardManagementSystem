@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ public class CustomerServiceImpl implements ICustomerService {
     public CustomerDto getCustomerById(String customerId) {
 
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         return convertToDto(customer);
     }
@@ -33,7 +34,7 @@ public class CustomerServiceImpl implements ICustomerService {
     public CustomerDto updateCustomer(String customerId, CustomerDto customerDto) {
 
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         customer.setName(customerDto.getName());
         customer.setEmail(customerDto.getEmail());

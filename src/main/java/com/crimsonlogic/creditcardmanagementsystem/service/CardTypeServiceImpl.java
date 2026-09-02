@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,7 @@ public class CardTypeServiceImpl implements ICardTypeService {
 
         CardType cardType = cardTypeRepository.findById(cardTypeId)
                 .orElseThrow(() ->
-                        new RuntimeException("Card Type not found with ID: " + cardTypeId)
+                        new ResourceNotFoundException("Card Type not found with ID: " + cardTypeId)
                 );
 
         return convertToDto(cardType);

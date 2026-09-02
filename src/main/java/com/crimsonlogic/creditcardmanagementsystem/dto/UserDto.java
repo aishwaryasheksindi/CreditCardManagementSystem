@@ -31,6 +31,8 @@ public class UserDto {
 
     private String roleId;
 
+    private String roleName;
+
     private String accountStatus;
 
     public UserDto() {
@@ -74,6 +76,14 @@ public class UserDto {
 
     public void setRoleId(String roleId) {
         this.roleId = roleId;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public String getAccountStatus() {

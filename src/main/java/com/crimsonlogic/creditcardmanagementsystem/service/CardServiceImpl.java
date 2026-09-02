@@ -4,6 +4,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.CardDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
@@ -45,7 +46,7 @@ public class CardServiceImpl implements ICardService {
 
         Customer customer = customerRepository.findById(cardDto.getCustomerId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Customer not found with ID: "
                                         + cardDto.getCustomerId()
                         )
@@ -53,7 +54,7 @@ public class CardServiceImpl implements ICardService {
 
         CardType cardType = cardTypeRepository.findById(cardDto.getCardTypeId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Card Type not found with ID: "
                                         + cardDto.getCardTypeId()
                         )
@@ -84,7 +85,7 @@ public class CardServiceImpl implements ICardService {
 
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Card not found with ID: " + cardId
                         )
                 );
@@ -102,7 +103,7 @@ public class CardServiceImpl implements ICardService {
 
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Card not found with ID: " + cardId
                         )
                 );
@@ -112,12 +113,12 @@ public class CardServiceImpl implements ICardService {
         }
         if (cardDto.getCustomerId() != null) {
             Customer customer = customerRepository.findById(cardDto.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + cardDto.getCustomerId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + cardDto.getCustomerId()));
             card.setCustomer(customer);
         }
         if (cardDto.getCardTypeId() != null) {
             CardType cardType = cardTypeRepository.findById(cardDto.getCardTypeId())
-                    .orElseThrow(() -> new RuntimeException("Card Type not found with ID: " + cardDto.getCardTypeId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Card Type not found with ID: " + cardDto.getCardTypeId()));
             card.setCardType(cardType);
         }
         if (cardDto.getCardStatus() != null) {

@@ -2,9 +2,9 @@ package com.crimsonlogic.creditcardmanagementsystem.controller;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.LoginRequest;
 import com.crimsonlogic.creditcardmanagementsystem.dto.LoginResponse;
-import com.crimsonlogic.creditcardmanagementsystem.entity.User;
-import com.crimsonlogic.creditcardmanagementsystem.repository.UserRepository;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
 import com.crimsonlogic.creditcardmanagementsystem.security.JwtService;
+import com.crimsonlogic.creditcardmanagementsystem.service.IUserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,14 +20,14 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final IUserService userService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtService jwtService,
-                          UserRepository userRepository) {
+                          IUserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -40,17 +40,16 @@ public class AuthController {
                 )
         );
 
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + request.getUsername()));
+        UserDto user = userService.findByUsername(request.getUsername());
 
-        String roleCode = user.getRole() != null && user.getRole().getRoleCode() != null
-                ? user.getRole().getRoleCode()
+        String roleName = user.getRoleName() != null
+                ? user.getRoleName()
                 : "USER";
 
-        String token = jwtService.generateToken(user.getUsername(), roleCode);
+        String token = jwtService.generateToken(user.getUsername(), roleName);
         Date expiresAt = jwtService.extractExpiration(token);
 
-        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), roleCode, expiresAt));
+        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), roleName, expiresAt));
     }
 }
 

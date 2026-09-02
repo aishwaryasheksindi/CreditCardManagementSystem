@@ -3,6 +3,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardStatusHistory;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardStatusHistoryRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
@@ -39,7 +40,7 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
         Card card = cardRepository
                 .findById(cardStatusHistoryDto.getCardId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Card not found with ID: "
                                         + cardStatusHistoryDto.getCardId()
                         )
@@ -80,7 +81,7 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
                 cardStatusHistoryRepository
                         .findById(cardStatusHistoryId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Card status history not found with ID: "
                                                 + cardStatusHistoryId
                                 )

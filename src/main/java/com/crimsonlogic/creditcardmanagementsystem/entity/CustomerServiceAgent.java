@@ -15,13 +15,13 @@ public class CustomerServiceAgent extends Staff {
 
     public CustomerServiceAgent(String staffId,
                                 String userId,
-                                String name,
-                                String phone,
-                                LocalDate dob,
-                                String address,
-                                String designation,
-                                LocalDate dateOfJoining,
-                                String employeeStatus) {
-        super(staffId, userId, name, phone, dob, address, designation, dateOfJoining, employeeStatus);
+                                String empName,
+                                String empPhone,
+                                LocalDate empDob,
+                                String empAddress,
+                                String empDesignation,
+                                LocalDate empJoiningDate,
+                                String empStatus) {
+        super(staffId, userId, empName, empPhone, empDob, empAddress, empDesignation, empJoiningDate, empStatus);
     }
 }

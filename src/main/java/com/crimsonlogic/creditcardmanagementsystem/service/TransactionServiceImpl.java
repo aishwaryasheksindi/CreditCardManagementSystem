@@ -5,6 +5,7 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.TransactionCategory;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Merchant;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
+import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionCategoryRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.MerchantRepository;
@@ -50,7 +51,7 @@ public class TransactionServiceImpl implements ITransactionService {
         Card card = cardRepository
                 .findById(transactionDto.getCardId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Card not found with ID: "
                                         + transactionDto.getCardId()
                         )
@@ -61,7 +62,7 @@ public class TransactionServiceImpl implements ITransactionService {
         Merchant merchant = merchantRepository
                 .findById(transactionDto.getMerchantId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Merchant not found with ID: "
                                         + transactionDto.getMerchantId()
                         )
@@ -72,7 +73,7 @@ public class TransactionServiceImpl implements ITransactionService {
         TransactionCategory category = categoryRepository
                 .findById(transactionDto.getCategoryId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Category not found with ID: "
                                         + transactionDto.getCategoryId()
                         )
@@ -115,7 +116,7 @@ public class TransactionServiceImpl implements ITransactionService {
         Transaction transaction =
                 transactionRepository.findById(transactionId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Transaction not found with ID: "
                                                 + transactionId
                                 )
