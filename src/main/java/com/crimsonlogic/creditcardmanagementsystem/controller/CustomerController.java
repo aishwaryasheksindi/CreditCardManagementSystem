@@ -2,20 +2,34 @@ package com.crimsonlogic.creditcardmanagementsystem.controller;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ICustomerService;
-
 import jakarta.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
 
-    @Autowired
-    private ICustomerService customerService;
+    private final ICustomerService customerService;
+
+    public CustomerController(ICustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    // Search customers
+    @GetMapping("/search")
+    public ResponseEntity<List<CustomerDto>> searchCustomers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String email) {
+
+        List<CustomerDto> customers =
+                customerService.searchCustomers(name, phoneNumber, email);
+
+        return ResponseEntity.ok(customers);
+    }
 
     // Get customer by ID
     @GetMapping("/{customerId}")

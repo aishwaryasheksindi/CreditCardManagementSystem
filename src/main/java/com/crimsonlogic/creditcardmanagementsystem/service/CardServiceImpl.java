@@ -32,6 +32,11 @@ public class CardServiceImpl implements ICardService {
     @Override
     public CardDto addCard(CardDto cardDto) {
 
+        if (cardDto.getAvailableLimit() != null && cardDto.getCreditLimit() != null
+                && cardDto.getAvailableLimit().compareTo(cardDto.getCreditLimit()) > 0) {
+            throw new IllegalArgumentException("Available limit cannot exceed credit limit");
+        }
+
         String cardId;
 
         do {
@@ -85,6 +90,63 @@ public class CardServiceImpl implements ICardService {
                 );
 
         return convertToDto(card);
+    }
+
+    @Override
+    public CardDto updateCard(String cardId, CardDto cardDto) {
+
+        if (cardDto.getAvailableLimit() != null && cardDto.getCreditLimit() != null
+                && cardDto.getAvailableLimit().compareTo(cardDto.getCreditLimit()) > 0) {
+            throw new IllegalArgumentException("Available limit cannot exceed credit limit");
+        }
+
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Card not found with ID: " + cardId
+                        )
+                );
+
+        if (cardDto.getCardReference() != null) {
+            card.setCardReference(cardDto.getCardReference());
+        }
+        if (cardDto.getCustomerId() != null) {
+            Customer customer = customerRepository.findById(cardDto.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + cardDto.getCustomerId()));
+            card.setCustomer(customer);
+        }
+        if (cardDto.getCardTypeId() != null) {
+            CardType cardType = cardTypeRepository.findById(cardDto.getCardTypeId())
+                    .orElseThrow(() -> new RuntimeException("Card Type not found with ID: " + cardDto.getCardTypeId()));
+            card.setCardType(cardType);
+        }
+        if (cardDto.getCardStatus() != null) {
+            card.setCardStatus(cardDto.getCardStatus());
+        }
+        if (cardDto.getCreditLimit() != null) {
+            card.setCreditLimit(cardDto.getCreditLimit());
+        }
+        if (cardDto.getAvailableLimit() != null) {
+            card.setAvailableLimit(cardDto.getAvailableLimit());
+        }
+        if (cardDto.getBillingCycle() != null) {
+            card.setBillingCycle(cardDto.getBillingCycle());
+        }
+        if (cardDto.getInterestRate() != null) {
+            card.setInterestRate(cardDto.getInterestRate());
+        }
+        if (cardDto.getAnnualFee() != null) {
+            card.setAnnualFee(cardDto.getAnnualFee());
+        }
+        if (cardDto.getExpiryDate() != null) {
+            card.setExpiryDate(cardDto.getExpiryDate());
+        }
+        if (cardDto.getIssuanceDate() != null) {
+            card.setIssuanceDate(cardDto.getIssuanceDate());
+        }
+
+        Card savedCard = cardRepository.save(card);
+        return convertToDto(savedCard);
     }
 
     private CardDto convertToDto(Card card) {

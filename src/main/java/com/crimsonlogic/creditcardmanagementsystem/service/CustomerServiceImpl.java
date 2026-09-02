@@ -1,17 +1,24 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements ICustomerService {
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
+
+    public CustomerServiceImpl(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     @Override
     public CustomerDto getCustomerById(String customerId) {
@@ -19,21 +26,7 @@ public class CustomerServiceImpl implements ICustomerService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        CustomerDto customerDto = new CustomerDto();
-
-        customerDto.setCustomerId(customer.getCustomerId());
-        customerDto.setName(customer.getName());
-        customerDto.setEmail(customer.getEmail());
-        customerDto.setPhoneNumber(customer.getPhoneNumber());
-        customerDto.setAddress(customer.getAddress());
-        customerDto.setDateOfBirth(customer.getDateOfBirth());
-        customerDto.setEmployment(customer.getEmployment());
-        customerDto.setIncomeRange(customer.getIncomeRange());
-        customerDto.setKycStatus(customer.getKycStatus());
-        customerDto.setCreditProfile(customer.getCreditProfile());
-        customerDto.setCustomerStatus(customer.getCustomerStatus());
-
-        return customerDto;
+        return convertToDto(customer);
     }
 
     @Override
@@ -55,20 +48,60 @@ public class CustomerServiceImpl implements ICustomerService {
 
         Customer updatedCustomer = customerRepository.save(customer);
 
-        CustomerDto responseDto = new CustomerDto();
+        return convertToDto(updatedCustomer);
+    }
 
-        responseDto.setCustomerId(updatedCustomer.getCustomerId());
-        responseDto.setName(updatedCustomer.getName());
-        responseDto.setEmail(updatedCustomer.getEmail());
-        responseDto.setPhoneNumber(updatedCustomer.getPhoneNumber());
-        responseDto.setAddress(updatedCustomer.getAddress());
-        responseDto.setDateOfBirth(updatedCustomer.getDateOfBirth());
-        responseDto.setEmployment(updatedCustomer.getEmployment());
-        responseDto.setIncomeRange(updatedCustomer.getIncomeRange());
-        responseDto.setKycStatus(updatedCustomer.getKycStatus());
-        responseDto.setCreditProfile(updatedCustomer.getCreditProfile());
-        responseDto.setCustomerStatus(updatedCustomer.getCustomerStatus());
+    @Override
+    public List<CustomerDto> searchCustomers(String name, String phoneNumber, String email) {
 
-        return responseDto;
+        List<Customer> results = new ArrayList<>();
+
+        if (name != null && !name.isBlank()) {
+            results.addAll(customerRepository.findByNameContainingIgnoreCase(name.trim()));
+        }
+
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            results.addAll(customerRepository.findByPhoneNumber(phoneNumber.trim()));
+        }
+
+        if (email != null && !email.isBlank()) {
+            results.addAll(customerRepository.findByEmail(email.trim()));
+        }
+
+        // If no criteria provided, return all customers
+        if ((name == null || name.isBlank())
+                && (phoneNumber == null || phoneNumber.isBlank())
+                && (email == null || email.isBlank())) {
+            results.addAll(customerRepository.findAll());
+        }
+
+        // Deduplicate keeping order
+        Set<String> seenIds = new LinkedHashSet<>();
+        List<Customer> distinctResults = new ArrayList<>();
+        for (Customer c : results) {
+            if (seenIds.add(c.getCustomerId())) {
+                distinctResults.add(c);
+            }
+        }
+
+        return distinctResults.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private CustomerDto convertToDto(Customer customer) {
+        CustomerDto customerDto = new CustomerDto();
+        customerDto.setCustomerId(customer.getCustomerId());
+        customerDto.setName(customer.getName());
+        customerDto.setEmail(customer.getEmail());
+        customerDto.setPhoneNumber(customer.getPhoneNumber());
+        customerDto.setAddress(customer.getAddress());
+        customerDto.setDateOfBirth(customer.getDateOfBirth());
+        customerDto.setEmployment(customer.getEmployment());
+        customerDto.setIncomeRange(customer.getIncomeRange());
+        customerDto.setKycStatus(customer.getKycStatus());
+        customerDto.setCreditProfile(customer.getCreditProfile());
+        customerDto.setCustomerStatus(customer.getCustomerStatus());
+        return customerDto;
     }
 }

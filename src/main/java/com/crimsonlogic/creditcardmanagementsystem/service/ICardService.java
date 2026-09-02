@@ -7,4 +7,6 @@ public interface ICardService {
     CardDto addCard(CardDto cardDto);
 
     CardDto getCardById(String cardId);
+
+    CardDto updateCard(String cardId, CardDto cardDto);
 }

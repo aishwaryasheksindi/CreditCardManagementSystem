@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
 import com.crimsonlogic.creditcardmanagementsystem.enums.CardStatus;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,8 +29,8 @@ public class CardDto {
     private CardStatus cardStatus;
 
     @NotNull(message = "Credit limit is required")
-    @DecimalMin(value = "0.0", inclusive = true,
-            message = "Credit limit cannot be negative")
+    @DecimalMin(value = "10000.0", message = "Credit limit must be at least ₹10,000")
+    @DecimalMax(value = "2000000.0", message = "Credit limit cannot exceed ₹20,00,000")
     private BigDecimal creditLimit;
 
     @NotNull(message = "Available limit is required")
@@ -42,8 +43,8 @@ public class CardDto {
     private String billingCycle;
 
     @NotNull(message = "Interest rate is required")
-    @DecimalMin(value = "0.0", inclusive = true,
-            message = "Interest rate cannot be negative")
+    @DecimalMin(value = "1.0", message = "Interest rate must be at least 1%")
+    @DecimalMax(value = "42.0", message = "Interest rate cannot exceed 42% (typical credit card range)")
     private BigDecimal interestRate;
 
     @NotNull(message = "Annual fee is required")

@@ -37,4 +37,14 @@ public class CardController {
 
         return ResponseEntity.ok(cardDto);
     }
+
+    @PutMapping("/{cardId}")
+    public ResponseEntity<CardDto> updateCard(
+            @PathVariable String cardId,
+            @Valid @RequestBody CardDto cardDto) {
+
+        CardDto updatedCard = cardService.updateCard(cardId, cardDto);
+
+        return ResponseEntity.ok(updatedCard);
+    }
 }

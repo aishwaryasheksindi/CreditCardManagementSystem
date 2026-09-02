@@ -11,8 +11,11 @@ import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 @Service
 public class RoleServiceImpl implements IRoleService {
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
+
+    public RoleServiceImpl(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
     @Override
     public RoleDto addRole(RoleDto roleDto) {
@@ -21,6 +24,7 @@ public class RoleServiceImpl implements IRoleService {
 
         role.setRoleId(IdGenerationUtil.generateRoleId());
         role.setRoleName(roleDto.getRoleName());
+        role.setRoleCode(roleDto.getRoleCode());
         role.setDescription(roleDto.getDescription());
 
         Role savedRole = roleRepository.save(role);
@@ -29,6 +33,7 @@ public class RoleServiceImpl implements IRoleService {
 
         responseDto.setRoleId(savedRole.getRoleId());
         responseDto.setRoleName(savedRole.getRoleName());
+        responseDto.setRoleCode(savedRole.getRoleCode());
         responseDto.setDescription(savedRole.getDescription());
 
         return responseDto;
@@ -44,6 +49,7 @@ public class RoleServiceImpl implements IRoleService {
 
         responseDto.setRoleId(role.getRoleId());
         responseDto.setRoleName(role.getRoleName());
+        responseDto.setRoleCode(role.getRoleCode());
         responseDto.setDescription(role.getDescription());
 
         return responseDto;

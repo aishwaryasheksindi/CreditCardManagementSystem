@@ -66,4 +66,8 @@ public class IdGenerationUtil {
     public static String generatePaymentId() {
         return "PAY" + generateNumber(6);
     }
+
+    public static String generateStaffId() {
+        return "STF" + generateNumber(4);
+    }
 }

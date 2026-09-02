@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -11,47 +12,47 @@ import java.time.LocalDate;
 public class Statement {
 
     @Id
-    private Long statementId;
+    private String statementId;
 
-    private Long cardId;
+    private String cardId;
 
     private LocalDate statementDate;
 
     private LocalDate dueDate;
 
-    private Double openingBalance;
+    private BigDecimal openingBalance;
 
-    private Double totalPurchases;
+    private BigDecimal totalPurchases;
 
-    private Double totalPayments;
+    private BigDecimal totalPayments;
 
-    private Double totalRefunds;
+    private BigDecimal totalRefunds;
 
-    private Double totalFees;
+    private BigDecimal totalFees;
 
-    private Double totalInterest;
+    private BigDecimal totalInterest;
 
-    private Double closingBalance;
+    private BigDecimal closingBalance;
 
-    private Double minimumDue;
+    private BigDecimal minimumDue;
 
     // Default constructor
     public Statement() {
     }
 
     // Parameterized constructor
-    public Statement(Long statementId,
-                     Long cardId,
+    public Statement(String statementId,
+                     String cardId,
                      LocalDate statementDate,
                      LocalDate dueDate,
-                     Double openingBalance,
-                     Double totalPurchases,
-                     Double totalPayments,
-                     Double totalRefunds,
-                     Double totalFees,
-                     Double totalInterest,
-                     Double closingBalance,
-                     Double minimumDue) {
+                     BigDecimal openingBalance,
+                     BigDecimal totalPurchases,
+                     BigDecimal totalPayments,
+                     BigDecimal totalRefunds,
+                     BigDecimal totalFees,
+                     BigDecimal totalInterest,
+                     BigDecimal closingBalance,
+                     BigDecimal minimumDue) {
 
         this.statementId = statementId;
         this.cardId = cardId;
@@ -67,19 +68,19 @@ public class Statement {
         this.minimumDue = minimumDue;
     }
 
-    public Long getStatementId() {
+    public String getStatementId() {
         return statementId;
     }
 
-    public void setStatementId(Long statementId) {
+    public void setStatementId(String statementId) {
         this.statementId = statementId;
     }
 
-    public Long getCardId() {
+    public String getCardId() {
         return cardId;
     }
 
-    public void setCardId(Long cardId) {
+    public void setCardId(String cardId) {
         this.cardId = cardId;
     }
 
@@ -99,67 +100,67 @@ public class Statement {
         this.dueDate = dueDate;
     }
 
-    public Double getOpeningBalance() {
+    public BigDecimal getOpeningBalance() {
         return openingBalance;
     }
 
-    public void setOpeningBalance(Double openingBalance) {
+    public void setOpeningBalance(BigDecimal openingBalance) {
         this.openingBalance = openingBalance;
     }
 
-    public Double getTotalPurchases() {
+    public BigDecimal getTotalPurchases() {
         return totalPurchases;
     }
 
-    public void setTotalPurchases(Double totalPurchases) {
+    public void setTotalPurchases(BigDecimal totalPurchases) {
         this.totalPurchases = totalPurchases;
     }
 
-    public Double getTotalPayments() {
+    public BigDecimal getTotalPayments() {
         return totalPayments;
     }
 
-    public void setTotalPayments(Double totalPayments) {
+    public void setTotalPayments(BigDecimal totalPayments) {
         this.totalPayments = totalPayments;
     }
 
-    public Double getTotalRefunds() {
+    public BigDecimal getTotalRefunds() {
         return totalRefunds;
     }
 
-    public void setTotalRefunds(Double totalRefunds) {
+    public void setTotalRefunds(BigDecimal totalRefunds) {
         this.totalRefunds = totalRefunds;
     }
 
-    public Double getTotalFees() {
+    public BigDecimal getTotalFees() {
         return totalFees;
     }
 
-    public void setTotalFees(Double totalFees) {
+    public void setTotalFees(BigDecimal totalFees) {
         this.totalFees = totalFees;
     }
 
-    public Double getTotalInterest() {
+    public BigDecimal getTotalInterest() {
         return totalInterest;
     }
 
-    public void setTotalInterest(Double totalInterest) {
+    public void setTotalInterest(BigDecimal totalInterest) {
         this.totalInterest = totalInterest;
     }
 
-    public Double getClosingBalance() {
+    public BigDecimal getClosingBalance() {
         return closingBalance;
     }
 
-    public void setClosingBalance(Double closingBalance) {
+    public void setClosingBalance(BigDecimal closingBalance) {
         this.closingBalance = closingBalance;
     }
 
-    public Double getMinimumDue() {
+    public BigDecimal getMinimumDue() {
         return minimumDue;
     }
 
-    public void setMinimumDue(Double minimumDue) {
+    public void setMinimumDue(BigDecimal minimumDue) {
         this.minimumDue = minimumDue;
     }
 }

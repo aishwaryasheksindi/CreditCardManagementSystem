@@ -14,13 +14,17 @@ import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 @Service
 public class UserServiceImpl implements IUserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UserServiceImpl(UserRepository userRepository,
+                           RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public UserDto addUser(UserDto userDto) {
@@ -34,7 +38,6 @@ public class UserServiceImpl implements IUserService {
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
 
-        // For now
         user.setPasswordHash(passwordEncoder.encode(userDto.getPassword()));
 
         // Find Role using roleId
