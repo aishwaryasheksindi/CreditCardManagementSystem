@@ -10,9 +10,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
-public class CardTypeDto {
-
-    private String cardTypeId;
+public class CardTypeRequestDto {
 
     @NotBlank(message = "Card type name is required")
     @Pattern(
@@ -31,8 +29,6 @@ public class CardTypeDto {
     @DecimalMin(value = "1.0", message = "Interest rate must be at least 1%")
     @DecimalMax(value = "42.0", message = "Interest rate cannot exceed 42% (typical credit card range)")
     private BigDecimal interestRate;
-
-
 
     @NotNull(message = "Reward rate is required")
     @PositiveOrZero(message = "Reward rate cannot be negative")
@@ -55,25 +51,18 @@ public class CardTypeDto {
     @Size(max = 255, message = "Reward categories must not exceed 255 characters")
     private String rewardCategories;
 
-
-    // Default constructor
-    public CardTypeDto() {
+    public CardTypeRequestDto() {
     }
 
-
-    // Parameterized constructor
-    public CardTypeDto(String cardTypeId,
-                       String typeName,
-                       BigDecimal creditLimit,
-                       BigDecimal interestRate,
-                       BigDecimal rewardRate,
-                       BigDecimal joiningFee,
-                       BigDecimal annualFee,
-                       Boolean cashWithdrawalAllowed,
-                       Boolean emiEligible,
-                       String rewardCategories) {
-
-        this.cardTypeId = cardTypeId;
+    public CardTypeRequestDto(String typeName,
+                             BigDecimal creditLimit,
+                             BigDecimal interestRate,
+                             BigDecimal rewardRate,
+                             BigDecimal joiningFee,
+                             BigDecimal annualFee,
+                             Boolean cashWithdrawalAllowed,
+                             Boolean emiEligible,
+                             String rewardCategories) {
         this.typeName = typeName;
         this.creditLimit = creditLimit;
         this.interestRate = interestRate;
@@ -83,17 +72,6 @@ public class CardTypeDto {
         this.cashWithdrawalAllowed = cashWithdrawalAllowed;
         this.emiEligible = emiEligible;
         this.rewardCategories = rewardCategories;
-    }
-
-
-    // Getters and Setters
-
-    public String getCardTypeId() {
-        return cardTypeId;
-    }
-
-    public void setCardTypeId(String cardTypeId) {
-        this.cardTypeId = cardTypeId;
     }
 
     public String getTypeName() {

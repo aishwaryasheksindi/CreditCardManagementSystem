@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class UserDto {
-
-    private String userId;
+public class UserRequestDto {
 
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -31,19 +29,17 @@ public class UserDto {
 
     private String roleId;
 
-    private String roleName;
-
     private String accountStatus;
 
-    public UserDto() {
+    public UserRequestDto() {
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public UserRequestDto(String username, String email, String password, String roleId, String accountStatus) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.roleId = roleId;
+        this.accountStatus = accountStatus;
     }
 
     public String getUsername() {
@@ -76,14 +72,6 @@ public class UserDto {
 
     public void setRoleId(String roleId) {
         this.roleId = roleId;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
     }
 
     public String getAccountStatus() {

@@ -1,10 +1,11 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryResponseDto;
 
 public interface ITransactionCategoryService {
 
-	TransactionCategoryDto addCategory(TransactionCategoryDto categoryDto);
+	TransactionCategoryResponseDto addCategory(TransactionCategoryRequestDto categoryDto);
 
-	TransactionCategoryDto getCategoryById(String categoryId);
+	TransactionCategoryResponseDto getCategoryById(String categoryId);
 }

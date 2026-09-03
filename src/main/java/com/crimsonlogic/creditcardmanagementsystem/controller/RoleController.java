@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.RoleDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.RoleRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.RoleResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.IRoleService;
 
 import jakarta.validation.Valid;
@@ -21,14 +23,14 @@ public class RoleController {
     private IRoleService roleService;
 
     @PostMapping
-    public RoleDto addRole(@Valid @RequestBody RoleDto roleDto) {
+    public ResponseEntity<RoleResponseDto> addRole(@Valid @RequestBody RoleRequestDto roleRequestDto) {
 
-        return roleService.addRole(roleDto);
+        return ResponseEntity.ok(roleService.addRole(roleRequestDto));
     }
 
     @GetMapping("/{roleId}")
-    public RoleDto getRoleById(@PathVariable String roleId) {
+    public ResponseEntity<RoleResponseDto> getRoleById(@PathVariable String roleId) {
 
-        return roleService.getRoleById(roleId);
+        return ResponseEntity.ok(roleService.getRoleById(roleId));
     }
 }

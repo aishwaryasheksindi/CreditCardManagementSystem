@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.TransactionCategory;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Merchant;
@@ -20,7 +21,6 @@ public class TransactionServiceImpl implements ITransactionService {
     private final CardRepository cardRepository;
     private final MerchantRepository merchantRepository;
     private final TransactionCategoryRepository categoryRepository;
-  //  private final IdGenerationUtil idGenerationUtil;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
@@ -33,11 +33,10 @@ public class TransactionServiceImpl implements ITransactionService {
         this.cardRepository = cardRepository;
         this.merchantRepository = merchantRepository;
         this.categoryRepository = categoryRepository;
-       
     }
 
     @Override
-    public TransactionDto addTransaction(TransactionDto transactionDto) {
+    public TransactionResponseDto addTransaction(TransactionRequestDto transactionDto) {
 
         // Generate unique transaction ID
         String transactionId;
@@ -106,12 +105,12 @@ public class TransactionServiceImpl implements ITransactionService {
 
 
         // Convert Entity to DTO
-        return convertToDto(savedTransaction);
+        return convertToResponseDto(savedTransaction);
     }
 
 
     @Override
-    public TransactionDto getTransactionById(String transactionId) {
+    public TransactionResponseDto getTransactionById(String transactionId) {
 
         Transaction transaction =
                 transactionRepository.findById(transactionId)
@@ -122,14 +121,14 @@ public class TransactionServiceImpl implements ITransactionService {
                                 )
                         );
 
-        return convertToDto(transaction);
+        return convertToResponseDto(transaction);
     }
 
 
-    // Entity → DTO
-    private TransactionDto convertToDto(Transaction transaction) {
+    // Entity → Response DTO
+    private TransactionResponseDto convertToResponseDto(Transaction transaction) {
 
-        TransactionDto transactionDto = new TransactionDto();
+        TransactionResponseDto transactionDto = new TransactionResponseDto();
 
         transactionDto.setTransactionId(
                 transaction.getTransactionId()

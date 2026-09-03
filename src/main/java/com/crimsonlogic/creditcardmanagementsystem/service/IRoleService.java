@@ -1,10 +1,11 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.RoleDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.RoleRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.RoleResponseDto;
 
 public interface IRoleService {
 
-    RoleDto addRole(RoleDto roleDto);
+    RoleResponseDto addRole(RoleRequestDto roleRequestDto);
 
-    RoleDto getRoleById(String roleId);
+    RoleResponseDto getRoleById(String roleId);
 }

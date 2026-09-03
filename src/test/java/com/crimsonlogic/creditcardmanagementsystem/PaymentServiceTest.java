@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Payment;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
@@ -39,7 +40,7 @@ class PaymentServiceTest {
 
     @Test
     void testAddPayment_Success_UpdatesCardAvailableLimit() {
-        PaymentDto paymentDto = new PaymentDto();
+        PaymentRequestDto paymentDto = new PaymentRequestDto();
         paymentDto.setCardId("CARD1001");
         paymentDto.setCustomerId("CUST1001");
         paymentDto.setAmount(new BigDecimal("5000.00"));
@@ -58,7 +59,7 @@ class PaymentServiceTest {
         when(paymentRepository.existsById(any())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PaymentDto result = paymentService.addPayment(paymentDto);
+        PaymentResponseDto result = paymentService.addPayment(paymentDto);
 
         assertNotNull(result);
         assertEquals(PaymentStatus.SUCCESS, result.getPaymentStatus());

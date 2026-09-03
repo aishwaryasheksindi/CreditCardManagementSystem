@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.StatementItemDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementItemRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementItemResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.StatementItem;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StatementItemRepository;
@@ -24,7 +25,7 @@ public class StatementItemServiceImpl implements IStatementItemService {
     }
 
     @Override
-    public StatementItemDto addStatementItem(StatementItemDto statementItemDto) {
+    public StatementItemResponseDto addStatementItem(StatementItemRequestDto statementItemDto) {
 
         if (!statementRepository.existsById(statementItemDto.getStatementId())) {
             throw new ResourceNotFoundException("Statement not found with ID: " + statementItemDto.getStatementId());
@@ -45,32 +46,32 @@ public class StatementItemServiceImpl implements IStatementItemService {
         item.setItemType(statementItemDto.getItemType());
 
         StatementItem savedItem = statementItemRepository.save(item);
-        return convertToDto(savedItem);
+        return convertToResponseDto(savedItem);
     }
 
     @Override
-    public StatementItemDto getStatementItemById(String statementItemId) {
+    public StatementItemResponseDto getStatementItemById(String statementItemId) {
         StatementItem item = statementItemRepository.findById(statementItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Statement item not found with ID: " + statementItemId));
-        return convertToDto(item);
+        return convertToResponseDto(item);
     }
 
     @Override
-    public List<StatementItemDto> getItemsByStatementId(String statementId) {
+    public List<StatementItemResponseDto> getItemsByStatementId(String statementId) {
         return statementItemRepository.findByStatementId(statementId).stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<StatementItemDto> getAllStatementItems() {
+    public List<StatementItemResponseDto> getAllStatementItems() {
         return statementItemRepository.findAll().stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    private StatementItemDto convertToDto(StatementItem item) {
-        StatementItemDto dto = new StatementItemDto();
+    private StatementItemResponseDto convertToResponseDto(StatementItem item) {
+        StatementItemResponseDto dto = new StatementItemResponseDto();
         dto.setStatementItemId(item.getStatementItemId());
         dto.setStatementId(item.getStatementId());
         dto.setTransactionId(item.getTransactionId());

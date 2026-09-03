@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Merchant;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.MerchantRepository;
@@ -11,16 +12,13 @@ import org.springframework.stereotype.Service;
 public class MerchantServiceImpl implements IMerchantService {
 
     private final MerchantRepository merchantRepository;
- //   private final IdGenerationUtil idGenerationUtil;
 
-    public MerchantServiceImpl(MerchantRepository merchantRepository
-                               ) {
+    public MerchantServiceImpl(MerchantRepository merchantRepository) {
         this.merchantRepository = merchantRepository;
-        
     }
 
     @Override
-    public MerchantDto addMerchant(MerchantDto merchantDto) {
+    public MerchantResponseDto addMerchant(MerchantRequestDto merchantDto) {
 
         String merchantId;
 
@@ -42,11 +40,11 @@ public class MerchantServiceImpl implements IMerchantService {
 
         Merchant savedMerchant = merchantRepository.save(merchant);
 
-        return convertToDto(savedMerchant);
+        return convertToResponseDto(savedMerchant);
     }
 
     @Override
-    public MerchantDto getMerchantById(String merchantId) {
+    public MerchantResponseDto getMerchantById(String merchantId) {
 
         Merchant merchant = merchantRepository.findById(merchantId)
                 .orElseThrow(() ->
@@ -55,12 +53,12 @@ public class MerchantServiceImpl implements IMerchantService {
                         )
                 );
 
-        return convertToDto(merchant);
+        return convertToResponseDto(merchant);
     }
 
-    private MerchantDto convertToDto(Merchant merchant) {
+    private MerchantResponseDto convertToResponseDto(Merchant merchant) {
 
-        MerchantDto merchantDto = new MerchantDto();
+        MerchantResponseDto merchantDto = new MerchantResponseDto();
 
         merchantDto.setMerchantId(merchant.getMerchantId());
         merchantDto.setMerchantName(merchant.getMerchantName());

@@ -1,69 +1,38 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class StatementDto {
+public class StatementResponseDto {
 
     private String statementId;
-
-    @NotBlank(message = "Card ID is required")
     private String cardId;
-
-    @NotNull(message = "Statement date is required")
     private LocalDate statementDate;
-
-    @NotNull(message = "Due date is required")
     private LocalDate dueDate;
-
-    @NotNull(message = "Opening balance is required")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Opening balance cannot be negative")
     private BigDecimal openingBalance;
-
-    @NotNull(message = "Total purchases is required")
-    @PositiveOrZero(message = "Total purchases cannot be negative")
     private BigDecimal totalPurchases;
-
-    @NotNull(message = "Total payments is required")
-    @PositiveOrZero(message = "Total payments cannot be negative")
     private BigDecimal totalPayments;
-
-    @NotNull(message = "Total refunds is required")
-    @PositiveOrZero(message = "Total refunds cannot be negative")
     private BigDecimal totalRefunds;
-
-    @NotNull(message = "Total fees is required")
-    @PositiveOrZero(message = "Total fees cannot be negative")
     private BigDecimal totalFees;
-
-    @NotNull(message = "Total interest is required")
-    @PositiveOrZero(message = "Total interest cannot be negative")
     private BigDecimal totalInterest;
-
     private BigDecimal closingBalance;
-
     private BigDecimal minimumDue;
 
-    public StatementDto() {
+    public StatementResponseDto() {
     }
 
-    public StatementDto(String statementId,
-                        String cardId,
-                        LocalDate statementDate,
-                        LocalDate dueDate,
-                        BigDecimal openingBalance,
-                        BigDecimal totalPurchases,
-                        BigDecimal totalPayments,
-                        BigDecimal totalRefunds,
-                        BigDecimal totalFees,
-                        BigDecimal totalInterest,
-                        BigDecimal closingBalance,
-                        BigDecimal minimumDue) {
+    public StatementResponseDto(String statementId,
+                               String cardId,
+                               LocalDate statementDate,
+                               LocalDate dueDate,
+                               BigDecimal openingBalance,
+                               BigDecimal totalPurchases,
+                               BigDecimal totalPayments,
+                               BigDecimal totalRefunds,
+                               BigDecimal totalFees,
+                               BigDecimal totalInterest,
+                               BigDecimal closingBalance,
+                               BigDecimal minimumDue) {
         this.statementId = statementId;
         this.cardId = cardId;
         this.statementDate = statementDate;

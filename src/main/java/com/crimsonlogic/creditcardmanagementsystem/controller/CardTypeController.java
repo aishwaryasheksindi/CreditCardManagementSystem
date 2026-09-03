@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ICardTypeService;
 
 import jakarta.validation.Valid;
@@ -18,10 +19,10 @@ public class CardTypeController {
 
     // Add a new card type
     @PostMapping
-    public ResponseEntity<CardTypeDto> addCardType(
-            @Valid @RequestBody CardTypeDto cardTypeDto) {
+    public ResponseEntity<CardTypeResponseDto> addCardType(
+            @Valid @RequestBody CardTypeRequestDto cardTypeDto) {
 
-        CardTypeDto savedCardType =
+        CardTypeResponseDto savedCardType =
                 cardTypeService.addCardType(cardTypeDto);
 
         return ResponseEntity.ok(savedCardType);
@@ -29,10 +30,10 @@ public class CardTypeController {
 
     // Get card type by ID
     @GetMapping("/{cardTypeId}")
-    public ResponseEntity<CardTypeDto> getCardTypeById(
+    public ResponseEntity<CardTypeResponseDto> getCardTypeById(
             @PathVariable String cardTypeId) {
 
-        CardTypeDto cardTypeDto =
+        CardTypeResponseDto cardTypeDto =
                 cardTypeService.getCardTypeById(cardTypeId);
 
         return ResponseEntity.ok(cardTypeDto);

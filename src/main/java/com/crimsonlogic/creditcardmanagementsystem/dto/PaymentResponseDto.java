@@ -1,61 +1,34 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class PaymentDto {
+public class PaymentResponseDto {
 
     private String paymentId;
-
-    @NotBlank(message = "Card ID is required")
     private String cardId;
-
-    @NotBlank(message = "Customer ID is required")
     private String customerId;
-
-    @NotNull(message = "Payment amount is required")
-    @DecimalMin(value = "0.01", message = "Payment amount must be greater than zero")
     private BigDecimal amount;
-
-    @NotNull(message = "Payment date is required")
     private LocalDateTime paymentDate;
-
-    @NotBlank(message = "Payment type is required")
-    @Pattern(
-            regexp = "(?i)^(minimum|full|partial|custom)$",
-            message = "Payment type must be one of: minimum, full, partial, custom"
-    )
     private String paymentType;
-
-    @NotNull(message = "Payment status is required")
     private PaymentStatus paymentStatus;
-
-    @NotBlank(message = "Payment method is required")
-    @Size(max = 50, message = "Payment method must not exceed 50 characters")
     private String paymentMethod;
-
-    @Size(max = 100, message = "Reference number must not exceed 100 characters")
     private String referenceNumber;
 
-    public PaymentDto() {
+    public PaymentResponseDto() {
     }
 
-    public PaymentDto(String paymentId,
-                      String cardId,
-                      String customerId,
-                      BigDecimal amount,
-                      LocalDateTime paymentDate,
-                      String paymentType,
-                      PaymentStatus paymentStatus,
-                      String paymentMethod,
-                      String referenceNumber) {
+    public PaymentResponseDto(String paymentId,
+                              String cardId,
+                              String customerId,
+                              BigDecimal amount,
+                              LocalDateTime paymentDate,
+                              String paymentType,
+                              PaymentStatus paymentStatus,
+                              String paymentMethod,
+                              String referenceNumber) {
         this.paymentId = paymentId;
         this.cardId = cardId;
         this.customerId = customerId;

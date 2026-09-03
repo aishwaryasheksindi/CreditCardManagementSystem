@@ -1,34 +1,19 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
-public class TransactionCategoryDto {
+public class TransactionCategoryResponseDto {
 
     private String categoryId;
-
-    @NotBlank(message = "Category name is required")
     private String categoryName;
-
     private String description;
 
-
-    // Default constructor
-    public TransactionCategoryDto() {
+    public TransactionCategoryResponseDto() {
     }
 
-
-    // Parameterized constructor
-    public TransactionCategoryDto(String categoryId,
-                       String categoryName,
-                       String description) {
-
+    public TransactionCategoryResponseDto(String categoryId, String categoryName, String description) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.description = description;
     }
-
-
-    // Getters and Setters
 
     public String getCategoryId() {
         return categoryId;

@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ITransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,10 +19,10 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<TransactionDto> addTransaction(
-            @Valid @RequestBody TransactionDto transactionDto) {
+    public ResponseEntity<TransactionResponseDto> addTransaction(
+            @Valid @RequestBody TransactionRequestDto transactionDto) {
 
-        TransactionDto savedTransaction =
+        TransactionResponseDto savedTransaction =
                 transactionService.addTransaction(transactionDto);
 
         return new ResponseEntity<>(
@@ -31,10 +32,10 @@ public class TransactionController {
     }
 
     @GetMapping("/{transactionId}")
-    public ResponseEntity<TransactionDto> getTransactionById(
+    public ResponseEntity<TransactionResponseDto> getTransactionById(
             @PathVariable String transactionId) {
 
-        TransactionDto transactionDto =
+        TransactionResponseDto transactionDto =
                 transactionService.getTransactionById(transactionId);
 
         return ResponseEntity.ok(transactionDto);

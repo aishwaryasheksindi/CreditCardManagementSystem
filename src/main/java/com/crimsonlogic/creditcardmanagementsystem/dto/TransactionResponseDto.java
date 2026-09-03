@@ -1,66 +1,34 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
 import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionStatus;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class TransactionDto {
+public class TransactionResponseDto {
 
     private String transactionId;
-
-    @NotBlank(message = "Card ID is required")
     private String cardId;
-
-    @NotBlank(message = "Merchant ID is required")
     private String merchantId;
-
-    @NotBlank(message = "Category ID is required")
     private String categoryId;
-
-    @NotNull(message = "Transaction amount is required")
-    @DecimalMin(value = "0.01", message = "Transaction amount must be greater than zero")
     private BigDecimal amount;
-
-    @NotBlank(message = "Currency is required")
-    @Pattern(
-            regexp = "^[A-Z]{3}$",
-            message = "Currency must be a valid 3-letter uppercase code"
-    )
     private String currency;
-
-    @NotNull(message = "Transaction date is required")
     private LocalDateTime transactionDate;
-
-    @NotBlank(message = "Transaction location is required")
-    @Size(max = 200, message = "Transaction location must not exceed 200 characters")
     private String transactionLocation;
-
-    @NotNull(message = "Transaction status is required")
     private TransactionStatus transactionStatus;
 
-
-    // Default constructor
-    public TransactionDto() {
+    public TransactionResponseDto() {
     }
 
-
-    // Parameterized constructor
-    public TransactionDto(String transactionId,
-                          String cardId,
-                          String merchantId,
-                          String categoryId,
-                          BigDecimal amount,
-                          String currency,
-                          LocalDateTime transactionDate,
-                          String transactionLocation,
-                          TransactionStatus transactionStatus) {
-
+    public TransactionResponseDto(String transactionId,
+                                  String cardId,
+                                  String merchantId,
+                                  String categoryId,
+                                  BigDecimal amount,
+                                  String currency,
+                                  LocalDateTime transactionDate,
+                                  String transactionLocation,
+                                  TransactionStatus transactionStatus) {
         this.transactionId = transactionId;
         this.cardId = cardId;
         this.merchantId = merchantId;
@@ -71,9 +39,6 @@ public class TransactionDto {
         this.transactionLocation = transactionLocation;
         this.transactionStatus = transactionStatus;
     }
-
-
-    // Getters and Setters
 
     public String getTransactionId() {
         return transactionId;

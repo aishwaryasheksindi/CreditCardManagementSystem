@@ -1,51 +1,31 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
 import com.crimsonlogic.creditcardmanagementsystem.enums.CardStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
-public class CardStatusHistoryDto {
+public class CardStatusHistoryResponseDto {
 
     private String cardStatusHistoryId;
-
-    @NotBlank(message = "Card ID is required")
     private String cardId;
-
-    @NotNull(message = "Card status is required")
     private CardStatus status;
-
-    @NotNull(message = "Changed date and time is required")
     private LocalDateTime changedAt;
-
-    @NotBlank(message = "Changed by is required")
-    @Size(max = 100, message = "Changed by must not exceed 100 characters")
     private String changedBy;
 
-
-    // Default constructor
-    public CardStatusHistoryDto() {
+    public CardStatusHistoryResponseDto() {
     }
 
-
-    // Parameterized constructor
-    public CardStatusHistoryDto(String cardStatusHistoryId,
-                                String cardId,
-                                CardStatus status,
-                                LocalDateTime changedAt,
-                                String changedBy) {
-
+    public CardStatusHistoryResponseDto(String cardStatusHistoryId,
+                                       String cardId,
+                                       CardStatus status,
+                                       LocalDateTime changedAt,
+                                       String changedBy) {
         this.cardStatusHistoryId = cardStatusHistoryId;
         this.cardId = cardId;
         this.status = status;
         this.changedAt = changedAt;
         this.changedBy = changedBy;
     }
-
-
-    // Getters and Setters
 
     public String getCardStatusHistoryId() {
         return cardStatusHistoryId;

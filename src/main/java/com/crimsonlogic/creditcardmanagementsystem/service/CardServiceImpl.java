@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
@@ -17,21 +18,18 @@ public class CardServiceImpl implements ICardService {
     private final CardRepository cardRepository;
     private final CustomerRepository customerRepository;
     private final CardTypeRepository cardTypeRepository;
-//    private final IdGenerationUtil idGenerationUtil;
 
     public CardServiceImpl(CardRepository cardRepository,
                            CustomerRepository customerRepository,
-                           CardTypeRepository cardTypeRepository
-                           ) {
+                           CardTypeRepository cardTypeRepository) {
 
         this.cardRepository = cardRepository;
         this.customerRepository = customerRepository;
         this.cardTypeRepository = cardTypeRepository;
-        
     }
 
     @Override
-    public CardDto addCard(CardDto cardDto) {
+    public CardResponseDto addCard(CardRequestDto cardDto) {
 
         if (cardDto.getAvailableLimit() != null && cardDto.getCreditLimit() != null
                 && cardDto.getAvailableLimit().compareTo(cardDto.getCreditLimit()) > 0) {
@@ -77,11 +75,11 @@ public class CardServiceImpl implements ICardService {
 
         Card savedCard = cardRepository.save(card);
 
-        return convertToDto(savedCard);
+        return convertToResponseDto(savedCard);
     }
 
     @Override
-    public CardDto getCardById(String cardId) {
+    public CardResponseDto getCardById(String cardId) {
 
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() ->
@@ -90,11 +88,11 @@ public class CardServiceImpl implements ICardService {
                         )
                 );
 
-        return convertToDto(card);
+        return convertToResponseDto(card);
     }
 
     @Override
-    public CardDto updateCard(String cardId, CardDto cardDto) {
+    public CardResponseDto updateCard(String cardId, CardRequestDto cardDto) {
 
         if (cardDto.getAvailableLimit() != null && cardDto.getCreditLimit() != null
                 && cardDto.getAvailableLimit().compareTo(cardDto.getCreditLimit()) > 0) {
@@ -147,12 +145,12 @@ public class CardServiceImpl implements ICardService {
         }
 
         Card savedCard = cardRepository.save(card);
-        return convertToDto(savedCard);
+        return convertToResponseDto(savedCard);
     }
 
-    private CardDto convertToDto(Card card) {
+    private CardResponseDto convertToResponseDto(Card card) {
 
-        CardDto cardDto = new CardDto();
+        CardResponseDto cardDto = new CardResponseDto();
 
         cardDto.setCardId(card.getCardId());
         cardDto.setCardReference(card.getCardReference());

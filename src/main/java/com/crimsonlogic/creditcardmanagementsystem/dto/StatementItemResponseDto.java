@@ -1,45 +1,28 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class StatementItemDto {
+public class StatementItemResponseDto {
 
     private String statementItemId;
-
-    @NotBlank(message = "Statement ID is required")
     private String statementId;
-
     private String transactionId;
-
-    @NotNull(message = "Item date is required")
     private LocalDate itemDate;
-
-    @NotBlank(message = "Description is required")
-    @Size(max = 255, message = "Description must not exceed 255 characters")
     private String description;
-
-    @NotNull(message = "Amount is required")
     private BigDecimal amount;
-
-    @NotBlank(message = "Item type is required")
-    @Size(max = 50, message = "Item type must not exceed 50 characters")
     private String itemType;
 
-    public StatementItemDto() {
+    public StatementItemResponseDto() {
     }
 
-    public StatementItemDto(String statementItemId,
-                            String statementId,
-                            String transactionId,
-                            LocalDate itemDate,
-                            String description,
-                            BigDecimal amount,
-                            String itemType) {
+    public StatementItemResponseDto(String statementItemId,
+                                   String statementId,
+                                   String transactionId,
+                                   LocalDate itemDate,
+                                   String description,
+                                   BigDecimal amount,
+                                   String itemType) {
         this.statementItemId = statementItemId;
         this.statementId = statementId;
         this.transactionId = transactionId;

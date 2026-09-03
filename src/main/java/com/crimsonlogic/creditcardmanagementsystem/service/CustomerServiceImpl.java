@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
@@ -22,16 +23,16 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
-    public CustomerDto getCustomerById(String customerId) {
+    public CustomerResponseDto getCustomerById(String customerId) {
 
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-        return convertToDto(customer);
+        return convertToResponseDto(customer);
     }
 
     @Override
-    public CustomerDto updateCustomer(String customerId, CustomerDto customerDto) {
+    public CustomerResponseDto updateCustomer(String customerId, CustomerRequestDto customerDto) {
 
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
@@ -49,11 +50,11 @@ public class CustomerServiceImpl implements ICustomerService {
 
         Customer updatedCustomer = customerRepository.save(customer);
 
-        return convertToDto(updatedCustomer);
+        return convertToResponseDto(updatedCustomer);
     }
 
     @Override
-    public List<CustomerDto> searchCustomers(String name, String phoneNumber, String email) {
+    public List<CustomerResponseDto> searchCustomers(String name, String phoneNumber, String email) {
 
         List<Customer> results = new ArrayList<>();
 
@@ -86,12 +87,12 @@ public class CustomerServiceImpl implements ICustomerService {
         }
 
         return distinctResults.stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    private CustomerDto convertToDto(Customer customer) {
-        CustomerDto customerDto = new CustomerDto();
+    private CustomerResponseDto convertToResponseDto(Customer customer) {
+        CustomerResponseDto customerDto = new CustomerResponseDto();
         customerDto.setCustomerId(customer.getCustomerId());
         customerDto.setName(customer.getName());
         customerDto.setEmail(customer.getEmail());

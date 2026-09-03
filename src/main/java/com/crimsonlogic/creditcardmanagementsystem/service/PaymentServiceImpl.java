@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Payment;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
@@ -33,7 +34,7 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Override
     @Transactional
-    public PaymentDto addPayment(PaymentDto paymentDto) {
+    public PaymentResponseDto addPayment(PaymentRequestDto paymentDto) {
 
         Card card = cardRepository.findById(paymentDto.getCardId())
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + paymentDto.getCardId()));
@@ -69,39 +70,39 @@ public class PaymentServiceImpl implements IPaymentService {
         }
 
         Payment savedPayment = paymentRepository.save(payment);
-        return convertToDto(savedPayment);
+        return convertToResponseDto(savedPayment);
     }
 
     @Override
-    public PaymentDto getPaymentById(String paymentId) {
+    public PaymentResponseDto getPaymentById(String paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
-        return convertToDto(payment);
+        return convertToResponseDto(payment);
     }
 
     @Override
-    public List<PaymentDto> getPaymentsByCustomerId(String customerId) {
+    public List<PaymentResponseDto> getPaymentsByCustomerId(String customerId) {
         return paymentRepository.findByCustomerId(customerId).stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<PaymentDto> getPaymentsByCardId(String cardId) {
+    public List<PaymentResponseDto> getPaymentsByCardId(String cardId) {
         return paymentRepository.findByCardId(cardId).stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<PaymentDto> getAllPayments() {
+    public List<PaymentResponseDto> getAllPayments() {
         return paymentRepository.findAll().stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    private PaymentDto convertToDto(Payment payment) {
-        PaymentDto dto = new PaymentDto();
+    private PaymentResponseDto convertToResponseDto(Payment payment) {
+        PaymentResponseDto dto = new PaymentResponseDto();
         dto.setPaymentId(payment.getPaymentId());
         dto.setCardId(payment.getCardId());
         dto.setCustomerId(payment.getCustomerId());

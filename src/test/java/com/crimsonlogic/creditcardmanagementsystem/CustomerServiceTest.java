@@ -1,6 +1,6 @@
 package com.crimsonlogic.creditcardmanagementsystem;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.service.CustomerServiceImpl;
@@ -35,7 +35,7 @@ class CustomerServiceTest {
 
         when(customerRepository.findByNameContainingIgnoreCase("John")).thenReturn(List.of(customer));
 
-        List<CustomerDto> results = customerService.searchCustomers("John", null, null);
+        List<CustomerResponseDto> results = customerService.searchCustomers("John", null, null);
 
         assertNotNull(results);
         assertEquals(1, results.size());
@@ -52,7 +52,7 @@ class CustomerServiceTest {
 
         when(customerRepository.findByPhoneNumber("9998887776")).thenReturn(List.of(customer));
 
-        List<CustomerDto> results = customerService.searchCustomers(null, "9998887776", null);
+        List<CustomerResponseDto> results = customerService.searchCustomers(null, "9998887776", null);
 
         assertNotNull(results);
         assertEquals(1, results.size());

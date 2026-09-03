@@ -1,12 +1,13 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 
 public interface IUserService {
 
-    UserDto addUser(UserDto userDto);
+    UserResponseDto addUser(UserRequestDto userRequestDto);
 
-    UserDto getUserById(String userId);
+    UserResponseDto getUserById(String userId);
 
-    UserDto findByUsername(String username);
+    UserResponseDto findByUsername(String username);
 }

@@ -1,10 +1,11 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeResponseDto;
 
 public interface ICardTypeService {
 
-    CardTypeDto addCardType(CardTypeDto cardTypeDto);
+    CardTypeResponseDto addCardType(CardTypeRequestDto cardTypeDto);
 
-    CardTypeDto getCardTypeById(String cardTypeId);
+    CardTypeResponseDto getCardTypeById(String cardTypeId);
 }

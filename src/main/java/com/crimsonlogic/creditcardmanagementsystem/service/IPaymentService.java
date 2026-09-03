@@ -1,18 +1,19 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentResponseDto;
 
 import java.util.List;
 
 public interface IPaymentService {
 
-    PaymentDto addPayment(PaymentDto paymentDto);
+    PaymentResponseDto addPayment(PaymentRequestDto paymentDto);
 
-    PaymentDto getPaymentById(String paymentId);
+    PaymentResponseDto getPaymentById(String paymentId);
 
-    List<PaymentDto> getPaymentsByCustomerId(String customerId);
+    List<PaymentResponseDto> getPaymentsByCustomerId(String customerId);
 
-    List<PaymentDto> getPaymentsByCardId(String cardId);
+    List<PaymentResponseDto> getPaymentsByCardId(String cardId);
 
-    List<PaymentDto> getAllPayments();
+    List<PaymentResponseDto> getAllPayments();
 }

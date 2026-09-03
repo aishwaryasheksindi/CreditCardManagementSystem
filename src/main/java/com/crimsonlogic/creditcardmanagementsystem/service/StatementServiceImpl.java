@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.StatementDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Statement;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
@@ -25,7 +26,7 @@ public class StatementServiceImpl implements IStatementService {
     }
 
     @Override
-    public StatementDto addStatement(StatementDto statementDto) {
+    public StatementResponseDto addStatement(StatementRequestDto statementDto) {
 
         if (!cardRepository.existsById(statementDto.getCardId())) {
             throw new ResourceNotFoundException("Card not found with ID: " + statementDto.getCardId());
@@ -73,32 +74,32 @@ public class StatementServiceImpl implements IStatementService {
         statement.setMinimumDue(minimumDue);
 
         Statement savedStatement = statementRepository.save(statement);
-        return convertToDto(savedStatement);
+        return convertToResponseDto(savedStatement);
     }
 
     @Override
-    public StatementDto getStatementById(String statementId) {
+    public StatementResponseDto getStatementById(String statementId) {
         Statement statement = statementRepository.findById(statementId)
                 .orElseThrow(() -> new ResourceNotFoundException("Statement not found with ID: " + statementId));
-        return convertToDto(statement);
+        return convertToResponseDto(statement);
     }
 
     @Override
-    public List<StatementDto> getStatementsByCardId(String cardId) {
+    public List<StatementResponseDto> getStatementsByCardId(String cardId) {
         return statementRepository.findByCardId(cardId).stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<StatementDto> getAllStatements() {
+    public List<StatementResponseDto> getAllStatements() {
         return statementRepository.findAll().stream()
-                .map(this::convertToDto)
+                .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    private StatementDto convertToDto(Statement statement) {
-        StatementDto dto = new StatementDto();
+    private StatementResponseDto convertToResponseDto(Statement statement) {
+        StatementResponseDto dto = new StatementResponseDto();
         dto.setStatementId(statement.getStatementId());
         dto.setCardId(statement.getCardId());
         dto.setStatementDate(statement.getStatementDate());

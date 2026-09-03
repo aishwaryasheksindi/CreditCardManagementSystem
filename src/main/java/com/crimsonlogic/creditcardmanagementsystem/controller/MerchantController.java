@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.IMerchantService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,10 +19,10 @@ public class MerchantController {
     }
 
     @PostMapping
-    public ResponseEntity<MerchantDto> addMerchant(
-            @Valid @RequestBody MerchantDto merchantDto) {
+    public ResponseEntity<MerchantResponseDto> addMerchant(
+            @Valid @RequestBody MerchantRequestDto merchantDto) {
 
-        MerchantDto savedMerchant =
+        MerchantResponseDto savedMerchant =
                 merchantService.addMerchant(merchantDto);
 
         return new ResponseEntity<>(
@@ -31,10 +32,10 @@ public class MerchantController {
     }
 
     @GetMapping("/{merchantId}")
-    public ResponseEntity<MerchantDto> getMerchantById(
+    public ResponseEntity<MerchantResponseDto> getMerchantById(
             @PathVariable String merchantId) {
 
-        MerchantDto merchantDto =
+        MerchantResponseDto merchantDto =
                 merchantService.getMerchantById(merchantId);
 
         return ResponseEntity.ok(merchantDto);

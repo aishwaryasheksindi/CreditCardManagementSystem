@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardTypeResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
@@ -11,16 +12,13 @@ import org.springframework.stereotype.Service;
 public class CardTypeServiceImpl implements ICardTypeService {
 
     private final CardTypeRepository cardTypeRepository;
-  //  private final IdGenerationUtil idGenerationUtil;
 
-    public CardTypeServiceImpl(CardTypeRepository cardTypeRepository
-                               ) {
+    public CardTypeServiceImpl(CardTypeRepository cardTypeRepository) {
         this.cardTypeRepository = cardTypeRepository;
-        
     }
 
     @Override
-    public CardTypeDto addCardType(CardTypeDto cardTypeDto) {
+    public CardTypeResponseDto addCardType(CardTypeRequestDto cardTypeDto) {
 
         String cardTypeId;
 
@@ -49,23 +47,23 @@ public class CardTypeServiceImpl implements ICardTypeService {
 
         CardType savedCardType = cardTypeRepository.save(cardType);
 
-        return convertToDto(savedCardType);
+        return convertToResponseDto(savedCardType);
     }
 
     @Override
-    public CardTypeDto getCardTypeById(String cardTypeId) {
+    public CardTypeResponseDto getCardTypeById(String cardTypeId) {
 
         CardType cardType = cardTypeRepository.findById(cardTypeId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Card Type not found with ID: " + cardTypeId)
                 );
 
-        return convertToDto(cardType);
+        return convertToResponseDto(cardType);
     }
 
-    private CardTypeDto convertToDto(CardType cardType) {
+    private CardTypeResponseDto convertToResponseDto(CardType cardType) {
 
-        CardTypeDto cardTypeDto = new CardTypeDto();
+        CardTypeResponseDto cardTypeDto = new CardTypeResponseDto();
 
         cardTypeDto.setCardTypeId(cardType.getCardTypeId());
         cardTypeDto.setTypeName(cardType.getTypeName());

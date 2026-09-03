@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardStatusHistory;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
@@ -14,7 +15,6 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
 
     private final CardStatusHistoryRepository cardStatusHistoryRepository;
     private final CardRepository cardRepository;
-//    private final IdGenerationUtil idGenerationUtil;
 
     public CardStatusHistoryServiceImpl(
             CardStatusHistoryRepository cardStatusHistoryRepository,
@@ -23,12 +23,11 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
 
         this.cardStatusHistoryRepository = cardStatusHistoryRepository;
         this.cardRepository = cardRepository;
-       
     }
 
     @Override
-    public CardStatusHistoryDto addCardStatusHistory(
-            CardStatusHistoryDto cardStatusHistoryDto) {
+    public CardStatusHistoryResponseDto addCardStatusHistory(
+            CardStatusHistoryRequestDto cardStatusHistoryDto) {
 
         String cardStatusHistoryId;
 
@@ -70,11 +69,11 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
         CardStatusHistory savedHistory =
                 cardStatusHistoryRepository.save(cardStatusHistory);
 
-        return convertToDto(savedHistory);
+        return convertToResponseDto(savedHistory);
     }
 
     @Override
-    public CardStatusHistoryDto getCardStatusHistoryById(
+    public CardStatusHistoryResponseDto getCardStatusHistoryById(
             String cardStatusHistoryId) {
 
         CardStatusHistory cardStatusHistory =
@@ -87,14 +86,14 @@ public class CardStatusHistoryServiceImpl implements ICardStatusHistoryService {
                                 )
                         );
 
-        return convertToDto(cardStatusHistory);
+        return convertToResponseDto(cardStatusHistory);
     }
 
-    private CardStatusHistoryDto convertToDto(
+    private CardStatusHistoryResponseDto convertToResponseDto(
             CardStatusHistory cardStatusHistory) {
 
-        CardStatusHistoryDto cardStatusHistoryDto =
-                new CardStatusHistoryDto();
+        CardStatusHistoryResponseDto cardStatusHistoryDto =
+                new CardStatusHistoryResponseDto();
 
         cardStatusHistoryDto.setCardStatusHistoryId(
                 cardStatusHistory.getCardStatusHistoryId()

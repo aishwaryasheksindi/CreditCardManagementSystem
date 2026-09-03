@@ -6,31 +6,31 @@ import java.util.List;
 
 public interface IStaffService {
 
-    AdminDto addAdmin(AdminDto adminDto);
+    AdminResponseDto addAdmin(AdminRequestDto adminDto);
 
-    AdminDto getAdminById(String staffId);
+    AdminResponseDto getAdminById(String staffId);
 
-    List<AdminDto> getAllAdmins();
+    List<AdminResponseDto> getAllAdmins();
 
-    BankOfficerDto addBankOfficer(BankOfficerDto bankOfficerDto);
+    BankOfficerResponseDto addBankOfficer(BankOfficerRequestDto bankOfficerDto);
 
-    BankOfficerDto getBankOfficerById(String staffId);
+    BankOfficerResponseDto getBankOfficerById(String staffId);
 
-    List<BankOfficerDto> getAllBankOfficers();
+    List<BankOfficerResponseDto> getAllBankOfficers();
 
-    FraudAnalystDto addFraudAnalyst(FraudAnalystDto fraudAnalystDto);
+    FraudAnalystResponseDto addFraudAnalyst(FraudAnalystRequestDto fraudAnalystDto);
 
-    FraudAnalystDto getFraudAnalystById(String staffId);
+    FraudAnalystResponseDto getFraudAnalystById(String staffId);
 
-    List<FraudAnalystDto> getAllFraudAnalysts();
+    List<FraudAnalystResponseDto> getAllFraudAnalysts();
 
-    CustomerServiceAgentDto addCustomerServiceAgent(CustomerServiceAgentDto agentDto);
+    CustomerServiceAgentResponseDto addCustomerServiceAgent(CustomerServiceAgentRequestDto agentDto);
 
-    CustomerServiceAgentDto getCustomerServiceAgentById(String staffId);
+    CustomerServiceAgentResponseDto getCustomerServiceAgentById(String staffId);
 
-    List<CustomerServiceAgentDto> getAllCustomerServiceAgents();
+    List<CustomerServiceAgentResponseDto> getAllCustomerServiceAgents();
 
-    StaffDto getStaffById(String staffId);
+    StaffResponseDto getStaffById(String staffId);
 
-    List<StaffDto> getAllStaff();
+    List<StaffResponseDto> getAllStaff();
 }

@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ITransactionCategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,10 +19,10 @@ public class TransactionCategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<TransactionCategoryDto> addCategory(
-            @Valid @RequestBody TransactionCategoryDto categoryDto) {
+    public ResponseEntity<TransactionCategoryResponseDto> addCategory(
+            @Valid @RequestBody TransactionCategoryRequestDto categoryDto) {
 
-    	TransactionCategoryDto savedCategory =
+    	TransactionCategoryResponseDto savedCategory =
                 categoryService.addCategory(categoryDto);
 
         return new ResponseEntity<>(
@@ -31,10 +32,10 @@ public class TransactionCategoryController {
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<TransactionCategoryDto> getCategoryById(
+    public ResponseEntity<TransactionCategoryResponseDto> getCategoryById(
             @PathVariable String categoryId) {
 
-    	TransactionCategoryDto categoryDto =
+    	TransactionCategoryResponseDto categoryDto =
                 categoryService.getCategoryById(categoryId);
 
         return ResponseEntity.ok(categoryDto);

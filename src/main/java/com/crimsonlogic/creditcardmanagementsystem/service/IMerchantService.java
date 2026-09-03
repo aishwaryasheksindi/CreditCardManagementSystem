@@ -1,10 +1,11 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.MerchantResponseDto;
 
 public interface IMerchantService {
 
-    MerchantDto addMerchant(MerchantDto merchantDto);
+    MerchantResponseDto addMerchant(MerchantRequestDto merchantDto);
 
-    MerchantDto getMerchantById(String merchantId);
+    MerchantResponseDto getMerchantById(String merchantId);
 }

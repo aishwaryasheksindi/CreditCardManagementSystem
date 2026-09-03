@@ -5,15 +5,12 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class CardDto {
-
-    private String cardId;
+public class CardRequestDto {
 
     @NotBlank(message = "Card reference is required")
     @Size(max = 100, message = "Card reference must not exceed 100 characters")
@@ -58,27 +55,20 @@ public class CardDto {
     @NotNull(message = "Issuance date is required")
     private LocalDate issuanceDate;
 
-
-    // Default constructor
-    public CardDto() {
+    public CardRequestDto() {
     }
 
-
-    // Parameterized constructor
-    public CardDto(String cardId,
-                   String cardReference,
-                   String customerId,
-                   String cardTypeId,
-                   CardStatus cardStatus,
-                   BigDecimal creditLimit,
-                   BigDecimal availableLimit,
-                   String billingCycle,
-                   BigDecimal interestRate,
-                   BigDecimal annualFee,
-                   LocalDate expiryDate,
-                   LocalDate issuanceDate) {
-
-        this.cardId = cardId;
+    public CardRequestDto(String cardReference,
+                          String customerId,
+                          String cardTypeId,
+                          CardStatus cardStatus,
+                          BigDecimal creditLimit,
+                          BigDecimal availableLimit,
+                          String billingCycle,
+                          BigDecimal interestRate,
+                          BigDecimal annualFee,
+                          LocalDate expiryDate,
+                          LocalDate issuanceDate) {
         this.cardReference = cardReference;
         this.customerId = customerId;
         this.cardTypeId = cardTypeId;
@@ -90,17 +80,6 @@ public class CardDto {
         this.annualFee = annualFee;
         this.expiryDate = expiryDate;
         this.issuanceDate = issuanceDate;
-    }
-
-
-    // Getters and Setters
-
-    public String getCardId() {
-        return cardId;
-    }
-
-    public void setCardId(String cardId) {
-        this.cardId = cardId;
     }
 
     public String getCardReference() {

@@ -1,12 +1,13 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 
 public interface ICardService {
 
-    CardDto addCard(CardDto cardDto);
+    CardResponseDto addCard(CardRequestDto cardDto);
 
-    CardDto getCardById(String cardId);
+    CardResponseDto getCardById(String cardId);
 
-    CardDto updateCard(String cardId, CardDto cardDto);
+    CardResponseDto updateCard(String cardId, CardRequestDto cardDto);
 }

@@ -2,7 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.controller;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.LoginRequest;
 import com.crimsonlogic.creditcardmanagementsystem.dto.LoginResponse;
-import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.security.JwtService;
 import com.crimsonlogic.creditcardmanagementsystem.service.IUserService;
 import jakarta.validation.Valid;
@@ -40,7 +40,7 @@ public class AuthController {
                 )
         );
 
-        UserDto user = userService.findByUsername(request.getUsername());
+        UserResponseDto user = userService.findByUsername(request.getUsername());
 
         String roleName = user.getRoleName() != null
                 ? user.getRoleName()

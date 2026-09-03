@@ -4,9 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class MerchantDto {
-
-    private String merchantId;
+public class MerchantRequestDto {
 
     @NotBlank(message = "Merchant name is required")
     @Pattern(
@@ -28,35 +26,17 @@ public class MerchantDto {
     @Size(max = 100, message = "Contact details must not exceed 100 characters")
     private String contactDetails;
 
-
-    // Default constructor
-    public MerchantDto() {
+    public MerchantRequestDto() {
     }
 
-
-    // Parameterized constructor
-    public MerchantDto(String merchantId,
-                       String merchantName,
-                       String merchantCategory,
-                       String location,
-                       String contactDetails) {
-
-        this.merchantId = merchantId;
+    public MerchantRequestDto(String merchantName,
+                             String merchantCategory,
+                             String location,
+                             String contactDetails) {
         this.merchantName = merchantName;
         this.merchantCategory = merchantCategory;
         this.location = location;
         this.contactDetails = contactDetails;
-    }
-
-
-    // Getters and Setters
-
-    public String getMerchantId() {
-        return merchantId;
-    }
-
-    public void setMerchantId(String merchantId) {
-        this.merchantId = merchantId;
     }
 
     public String getMerchantName() {

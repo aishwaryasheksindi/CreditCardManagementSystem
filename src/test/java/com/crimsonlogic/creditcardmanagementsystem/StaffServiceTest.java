@@ -43,7 +43,7 @@ class StaffServiceTest {
 
     @Test
     void testAddAdmin_Success() {
-        AdminDto adminDto = new AdminDto();
+        AdminRequestDto adminDto = new AdminRequestDto();
         adminDto.setUserId("USR1001");
         adminDto.setEmpName("System Admin");
         adminDto.setEmpPhone("9876543210");
@@ -57,7 +57,7 @@ class StaffServiceTest {
         when(staffRepository.existsById(any())).thenReturn(false);
         when(adminRepository.save(any(Admin.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AdminDto result = staffService.addAdmin(adminDto);
+        AdminResponseDto result = staffService.addAdmin(adminDto);
 
         assertNotNull(result);
         assertNotNull(result.getStaffId());
@@ -67,7 +67,7 @@ class StaffServiceTest {
 
     @Test
     void testAddBankOfficer_SuccessWithBranchCode() {
-        BankOfficerDto officerDto = new BankOfficerDto();
+        BankOfficerRequestDto officerDto = new BankOfficerRequestDto();
         officerDto.setUserId("USR1002");
         officerDto.setEmpName("John Officer");
         officerDto.setEmpPhone("9876543211");
@@ -82,7 +82,7 @@ class StaffServiceTest {
         when(staffRepository.existsById(any())).thenReturn(false);
         when(bankOfficerRepository.save(any(BankOfficer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        BankOfficerDto result = staffService.addBankOfficer(officerDto);
+        BankOfficerResponseDto result = staffService.addBankOfficer(officerDto);
 
         assertNotNull(result);
         assertNotNull(result.getStaffId());

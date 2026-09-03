@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionCategoryResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.TransactionCategory;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionCategoryRepository;
@@ -11,16 +12,13 @@ import org.springframework.stereotype.Service;
 public class TransactionCategoryServiceImpl implements ITransactionCategoryService {
 
     private final TransactionCategoryRepository categoryRepository;
- //   private final IdGenerationUtil idGenerationUtil;
 
-    public TransactionCategoryServiceImpl(TransactionCategoryRepository categoryRepository
-                               ) {
+    public TransactionCategoryServiceImpl(TransactionCategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
-        
     }
 
     @Override
-    public TransactionCategoryDto addCategory(TransactionCategoryDto categoryDto) {
+    public TransactionCategoryResponseDto addCategory(TransactionCategoryRequestDto categoryDto) {
 
         String categoryId;
 
@@ -36,11 +34,11 @@ public class TransactionCategoryServiceImpl implements ITransactionCategoryServi
 
         TransactionCategory savedCategory = categoryRepository.save(category);
 
-        return convertToDto(savedCategory);
+        return convertToResponseDto(savedCategory);
     }
 
     @Override
-    public TransactionCategoryDto getCategoryById(String categoryId) {
+    public TransactionCategoryResponseDto getCategoryById(String categoryId) {
 
     	TransactionCategory category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
@@ -49,12 +47,12 @@ public class TransactionCategoryServiceImpl implements ITransactionCategoryServi
                         )
                 );
 
-        return convertToDto(category);
+        return convertToResponseDto(category);
     }
 
-    private TransactionCategoryDto convertToDto(TransactionCategory category) {
+    private TransactionCategoryResponseDto convertToResponseDto(TransactionCategory category) {
 
-    	TransactionCategoryDto categoryDto = new TransactionCategoryDto();
+    	TransactionCategoryResponseDto categoryDto = new TransactionCategoryResponseDto();
 
         categoryDto.setCategoryId(category.getCategoryId());
         categoryDto.setCategoryName(category.getCategoryName());

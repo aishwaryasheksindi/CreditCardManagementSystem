@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.IUserService;
 
 import jakarta.validation.Valid;
@@ -22,19 +23,19 @@ public class UserController {
     private IUserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDto> addUser(
-            @Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<UserResponseDto> addUser(
+            @Valid @RequestBody UserRequestDto userRequestDto) {
 
-        UserDto savedUser = userService.addUser(userDto);
+        UserResponseDto savedUser = userService.addUser(userRequestDto);
 
         return ResponseEntity.ok(savedUser);
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> getUserById(
+    public ResponseEntity<UserResponseDto> getUserById(
             @PathVariable String userId) {
 
-        UserDto userDto = userService.getUserById(userId);
+        UserResponseDto userDto = userService.getUserById(userId);
 
         return ResponseEntity.ok(userDto);
     }

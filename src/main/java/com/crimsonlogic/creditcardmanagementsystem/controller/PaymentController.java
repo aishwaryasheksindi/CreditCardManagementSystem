@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.IPaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,36 +21,36 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<PaymentDto> addPayment(
-            @Valid @RequestBody PaymentDto paymentDto) {
-        PaymentDto savedPayment = paymentService.addPayment(paymentDto);
+    public ResponseEntity<PaymentResponseDto> addPayment(
+            @Valid @RequestBody PaymentRequestDto paymentDto) {
+        PaymentResponseDto savedPayment = paymentService.addPayment(paymentDto);
         return new ResponseEntity<>(savedPayment, HttpStatus.CREATED);
     }
 
     @GetMapping("/{paymentId}")
-    public ResponseEntity<PaymentDto> getPaymentById(
+    public ResponseEntity<PaymentResponseDto> getPaymentById(
             @PathVariable String paymentId) {
-        PaymentDto paymentDto = paymentService.getPaymentById(paymentId);
+        PaymentResponseDto paymentDto = paymentService.getPaymentById(paymentId);
         return ResponseEntity.ok(paymentDto);
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentDto>> getAllPayments() {
-        List<PaymentDto> payments = paymentService.getAllPayments();
+    public ResponseEntity<List<PaymentResponseDto>> getAllPayments() {
+        List<PaymentResponseDto> payments = paymentService.getAllPayments();
         return ResponseEntity.ok(payments);
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<PaymentDto>> getPaymentsByCustomerId(
+    public ResponseEntity<List<PaymentResponseDto>> getPaymentsByCustomerId(
             @PathVariable String customerId) {
-        List<PaymentDto> payments = paymentService.getPaymentsByCustomerId(customerId);
+        List<PaymentResponseDto> payments = paymentService.getPaymentsByCustomerId(customerId);
         return ResponseEntity.ok(payments);
     }
 
     @GetMapping("/card/{cardId}")
-    public ResponseEntity<List<PaymentDto>> getPaymentsByCardId(
+    public ResponseEntity<List<PaymentResponseDto>> getPaymentsByCardId(
             @PathVariable String cardId) {
-        List<PaymentDto> payments = paymentService.getPaymentsByCardId(cardId);
+        List<PaymentResponseDto> payments = paymentService.getPaymentsByCardId(cardId);
         return ResponseEntity.ok(payments);
     }
 }

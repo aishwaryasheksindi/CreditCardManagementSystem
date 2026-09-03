@@ -1,10 +1,10 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.UserDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
 import com.crimsonlogic.creditcardmanagementsystem.entity.User;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
@@ -28,7 +28,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserDto addUser(UserDto userDto) {
+    public UserResponseDto addUser(UserRequestDto userRequestDto) {
 
         User user = new User();
 
@@ -36,59 +36,45 @@ public class UserServiceImpl implements IUserService {
         user.setUserId(IdGenerationUtil.generateUserId());
 
         // Set User details
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
+        user.setUsername(userRequestDto.getUsername());
+        user.setEmail(userRequestDto.getEmail());
 
-        user.setPasswordHash(passwordEncoder.encode(userDto.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(userRequestDto.getPassword()));
 
         // Find Role using roleId
-        Role role = roleRepository.findById(userDto.getRoleId())
+        Role role = roleRepository.findById(userRequestDto.getRoleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         user.setRole(role);
 
-        user.setAccountStatus(userDto.getAccountStatus());
+        user.setAccountStatus(userRequestDto.getAccountStatus());
 
         // Save User
         User savedUser = userRepository.save(user);
 
-        // Convert User Entity to UserDto
-        UserDto responseDto = new UserDto();
-
-        responseDto.setUserId(savedUser.getUserId());
-        responseDto.setUsername(savedUser.getUsername());
-        responseDto.setEmail(savedUser.getEmail());
-        responseDto.setRoleId(savedUser.getRole().getRoleId());
-        responseDto.setAccountStatus(savedUser.getAccountStatus());
-
-        return responseDto;
+        return convertToResponseDto(savedUser);
     }
 
     @Override
-    public UserDto getUserById(String userId) {
+    public UserResponseDto getUserById(String userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        UserDto responseDto = new UserDto();
-
-        responseDto.setUserId(user.getUserId());
-        responseDto.setUsername(user.getUsername());
-        responseDto.setEmail(user.getEmail());
-        responseDto.setRoleId(user.getRole().getRoleId());
-        responseDto.setAccountStatus(user.getAccountStatus());
-
-        return responseDto;
+        return convertToResponseDto(user);
     }
 
     @Override
-    public UserDto findByUsername(String username) {
+    public UserResponseDto findByUsername(String username) {
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
 
-        UserDto responseDto = new UserDto();
+        return convertToResponseDto(user);
+    }
 
+    private UserResponseDto convertToResponseDto(User user) {
+        UserResponseDto responseDto = new UserResponseDto();
         responseDto.setUserId(user.getUserId());
         responseDto.setUsername(user.getUsername());
         responseDto.setEmail(user.getEmail());
@@ -97,7 +83,8 @@ public class UserServiceImpl implements IUserService {
             responseDto.setRoleName(user.getRole().getRoleName());
         }
         responseDto.setAccountStatus(user.getAccountStatus());
-
+        responseDto.setCreatedAt(user.getCreatedAt());
+        responseDto.setLastLoginAt(user.getLastLoginAt());
         return responseDto;
     }
 }

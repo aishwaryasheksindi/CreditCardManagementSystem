@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.StatementDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.IStatementService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,36 +21,36 @@ public class StatementController {
     }
 
     @PostMapping
-    public ResponseEntity<StatementDto> addStatement(
-            @Valid @RequestBody StatementDto statementDto) {
-        StatementDto savedStatement = statementService.addStatement(statementDto);
+    public ResponseEntity<StatementResponseDto> addStatement(
+            @Valid @RequestBody StatementRequestDto statementDto) {
+        StatementResponseDto savedStatement = statementService.addStatement(statementDto);
         return new ResponseEntity<>(savedStatement, HttpStatus.CREATED);
     }
 
     @GetMapping("/{statementId}")
-    public ResponseEntity<StatementDto> getStatementById(
+    public ResponseEntity<StatementResponseDto> getStatementById(
             @PathVariable String statementId) {
-        StatementDto statementDto = statementService.getStatementById(statementId);
+        StatementResponseDto statementDto = statementService.getStatementById(statementId);
         return ResponseEntity.ok(statementDto);
     }
 
     @GetMapping
-    public ResponseEntity<List<StatementDto>> getAllStatements() {
-        List<StatementDto> statements = statementService.getAllStatements();
+    public ResponseEntity<List<StatementResponseDto>> getAllStatements() {
+        List<StatementResponseDto> statements = statementService.getAllStatements();
         return ResponseEntity.ok(statements);
     }
 
     @GetMapping("/card/{cardId}")
-    public ResponseEntity<List<StatementDto>> getStatementsByCardId(
+    public ResponseEntity<List<StatementResponseDto>> getStatementsByCardId(
             @PathVariable String cardId) {
-        List<StatementDto> statements = statementService.getStatementsByCardId(cardId);
+        List<StatementResponseDto> statements = statementService.getStatementsByCardId(cardId);
         return ResponseEntity.ok(statements);
     }
 
     @GetMapping("/{statementId}/download")
-    public ResponseEntity<StatementDto> downloadStatement(
+    public ResponseEntity<StatementResponseDto> downloadStatement(
             @PathVariable String statementId) {
-        StatementDto statementDto = statementService.getStatementById(statementId);
+        StatementResponseDto statementDto = statementService.getStatementById(statementId);
         return ResponseEntity.ok(statementDto);
     }
 }

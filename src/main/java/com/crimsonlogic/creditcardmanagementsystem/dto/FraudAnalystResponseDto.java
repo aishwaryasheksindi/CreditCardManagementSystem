@@ -2,13 +2,13 @@ package com.crimsonlogic.creditcardmanagementsystem.dto;
 
 import java.time.LocalDate;
 
-public class CustomerServiceAgentDto extends StaffDto {
+public class FraudAnalystResponseDto extends StaffResponseDto {
 
-    public CustomerServiceAgentDto() {
+    public FraudAnalystResponseDto() {
         super();
     }
 
-    public CustomerServiceAgentDto(String staffId,
+    public FraudAnalystResponseDto(String staffId,
                                    String userId,
                                    String empName,
                                    String empPhone,

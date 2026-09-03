@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ICardStatusHistoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,10 @@ public class CardStatusHistoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CardStatusHistoryDto> addCardStatusHistory(
-            @Valid @RequestBody CardStatusHistoryDto cardStatusHistoryDto) {
+    public ResponseEntity<CardStatusHistoryResponseDto> addCardStatusHistory(
+            @Valid @RequestBody CardStatusHistoryRequestDto cardStatusHistoryDto) {
 
-        CardStatusHistoryDto savedHistory =
+        CardStatusHistoryResponseDto savedHistory =
                 cardStatusHistoryService.addCardStatusHistory(
                         cardStatusHistoryDto
                 );
@@ -35,10 +36,10 @@ public class CardStatusHistoryController {
     }
 
     @GetMapping("/{cardStatusHistoryId}")
-    public ResponseEntity<CardStatusHistoryDto> getCardStatusHistoryById(
+    public ResponseEntity<CardStatusHistoryResponseDto> getCardStatusHistoryById(
             @PathVariable String cardStatusHistoryId) {
 
-        CardStatusHistoryDto cardStatusHistoryDto =
+        CardStatusHistoryResponseDto cardStatusHistoryDto =
                 cardStatusHistoryService.getCardStatusHistoryById(
                         cardStatusHistoryId
                 );

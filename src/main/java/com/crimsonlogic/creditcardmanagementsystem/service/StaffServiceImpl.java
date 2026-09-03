@@ -49,7 +49,7 @@ public class StaffServiceImpl implements IStaffService {
     }
 
     @Override
-    public AdminDto addAdmin(AdminDto adminDto) {
+    public AdminResponseDto addAdmin(AdminRequestDto adminDto) {
         validateUser(adminDto.getUserId());
 
         Admin admin = new Admin();
@@ -64,25 +64,25 @@ public class StaffServiceImpl implements IStaffService {
         admin.setEmpStatus(adminDto.getEmpStatus());
 
         Admin saved = adminRepository.save(admin);
-        return convertToAdminDto(saved);
+        return convertToAdminResponseDto(saved);
     }
 
     @Override
-    public AdminDto getAdminById(String staffId) {
+    public AdminResponseDto getAdminById(String staffId) {
         Admin admin = adminRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + staffId));
-        return convertToAdminDto(admin);
+        return convertToAdminResponseDto(admin);
     }
 
     @Override
-    public List<AdminDto> getAllAdmins() {
+    public List<AdminResponseDto> getAllAdmins() {
         return adminRepository.findAll().stream()
-                .map(this::convertToAdminDto)
+                .map(this::convertToAdminResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public BankOfficerDto addBankOfficer(BankOfficerDto bankOfficerDto) {
+    public BankOfficerResponseDto addBankOfficer(BankOfficerRequestDto bankOfficerDto) {
         validateUser(bankOfficerDto.getUserId());
 
         BankOfficer officer = new BankOfficer();
@@ -98,25 +98,25 @@ public class StaffServiceImpl implements IStaffService {
         officer.setBranchCode(bankOfficerDto.getBranchCode());
 
         BankOfficer saved = bankOfficerRepository.save(officer);
-        return convertToBankOfficerDto(saved);
+        return convertToBankOfficerResponseDto(saved);
     }
 
     @Override
-    public BankOfficerDto getBankOfficerById(String staffId) {
+    public BankOfficerResponseDto getBankOfficerById(String staffId) {
         BankOfficer officer = bankOfficerRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank officer not found with ID: " + staffId));
-        return convertToBankOfficerDto(officer);
+        return convertToBankOfficerResponseDto(officer);
     }
 
     @Override
-    public List<BankOfficerDto> getAllBankOfficers() {
+    public List<BankOfficerResponseDto> getAllBankOfficers() {
         return bankOfficerRepository.findAll().stream()
-                .map(this::convertToBankOfficerDto)
+                .map(this::convertToBankOfficerResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public FraudAnalystDto addFraudAnalyst(FraudAnalystDto fraudAnalystDto) {
+    public FraudAnalystResponseDto addFraudAnalyst(FraudAnalystRequestDto fraudAnalystDto) {
         validateUser(fraudAnalystDto.getUserId());
 
         FraudAnalyst analyst = new FraudAnalyst();
@@ -131,25 +131,25 @@ public class StaffServiceImpl implements IStaffService {
         analyst.setEmpStatus(fraudAnalystDto.getEmpStatus());
 
         FraudAnalyst saved = fraudAnalystRepository.save(analyst);
-        return convertToFraudAnalystDto(saved);
+        return convertToFraudAnalystResponseDto(saved);
     }
 
     @Override
-    public FraudAnalystDto getFraudAnalystById(String staffId) {
+    public FraudAnalystResponseDto getFraudAnalystById(String staffId) {
         FraudAnalyst analyst = fraudAnalystRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fraud analyst not found with ID: " + staffId));
-        return convertToFraudAnalystDto(analyst);
+        return convertToFraudAnalystResponseDto(analyst);
     }
 
     @Override
-    public List<FraudAnalystDto> getAllFraudAnalysts() {
+    public List<FraudAnalystResponseDto> getAllFraudAnalysts() {
         return fraudAnalystRepository.findAll().stream()
-                .map(this::convertToFraudAnalystDto)
+                .map(this::convertToFraudAnalystResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public CustomerServiceAgentDto addCustomerServiceAgent(CustomerServiceAgentDto agentDto) {
+    public CustomerServiceAgentResponseDto addCustomerServiceAgent(CustomerServiceAgentRequestDto agentDto) {
         validateUser(agentDto.getUserId());
 
         CustomerServiceAgent agent = new CustomerServiceAgent();
@@ -164,78 +164,78 @@ public class StaffServiceImpl implements IStaffService {
         agent.setEmpStatus(agentDto.getEmpStatus());
 
         CustomerServiceAgent saved = customerServiceAgentRepository.save(agent);
-        return convertToCustomerServiceAgentDto(saved);
+        return convertToCustomerServiceAgentResponseDto(saved);
     }
 
     @Override
-    public CustomerServiceAgentDto getCustomerServiceAgentById(String staffId) {
+    public CustomerServiceAgentResponseDto getCustomerServiceAgentById(String staffId) {
         CustomerServiceAgent agent = customerServiceAgentRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer service agent not found with ID: " + staffId));
-        return convertToCustomerServiceAgentDto(agent);
+        return convertToCustomerServiceAgentResponseDto(agent);
     }
 
     @Override
-    public List<CustomerServiceAgentDto> getAllCustomerServiceAgents() {
+    public List<CustomerServiceAgentResponseDto> getAllCustomerServiceAgents() {
         return customerServiceAgentRepository.findAll().stream()
-                .map(this::convertToCustomerServiceAgentDto)
+                .map(this::convertToCustomerServiceAgentResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public StaffDto getStaffById(String staffId) {
+    public StaffResponseDto getStaffById(String staffId) {
         Staff staff = staffRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff not found with ID: " + staffId));
-        return convertToGenericStaffDto(staff);
+        return convertToGenericStaffResponseDto(staff);
     }
 
     @Override
-    public List<StaffDto> getAllStaff() {
+    public List<StaffResponseDto> getAllStaff() {
         return staffRepository.findAll().stream()
-                .map(this::convertToGenericStaffDto)
+                .map(this::convertToGenericStaffResponseDto)
                 .collect(Collectors.toList());
     }
 
-    private AdminDto convertToAdminDto(Admin admin) {
-        AdminDto dto = new AdminDto();
-        populateBaseDto(dto, admin);
+    private AdminResponseDto convertToAdminResponseDto(Admin admin) {
+        AdminResponseDto dto = new AdminResponseDto();
+        populateBaseResponseDto(dto, admin);
         return dto;
     }
 
-    private BankOfficerDto convertToBankOfficerDto(BankOfficer officer) {
-        BankOfficerDto dto = new BankOfficerDto();
-        populateBaseDto(dto, officer);
+    private BankOfficerResponseDto convertToBankOfficerResponseDto(BankOfficer officer) {
+        BankOfficerResponseDto dto = new BankOfficerResponseDto();
+        populateBaseResponseDto(dto, officer);
         dto.setBranchCode(officer.getBranchCode());
         return dto;
     }
 
-    private FraudAnalystDto convertToFraudAnalystDto(FraudAnalyst analyst) {
-        FraudAnalystDto dto = new FraudAnalystDto();
-        populateBaseDto(dto, analyst);
+    private FraudAnalystResponseDto convertToFraudAnalystResponseDto(FraudAnalyst analyst) {
+        FraudAnalystResponseDto dto = new FraudAnalystResponseDto();
+        populateBaseResponseDto(dto, analyst);
         return dto;
     }
 
-    private CustomerServiceAgentDto convertToCustomerServiceAgentDto(CustomerServiceAgent agent) {
-        CustomerServiceAgentDto dto = new CustomerServiceAgentDto();
-        populateBaseDto(dto, agent);
+    private CustomerServiceAgentResponseDto convertToCustomerServiceAgentResponseDto(CustomerServiceAgent agent) {
+        CustomerServiceAgentResponseDto dto = new CustomerServiceAgentResponseDto();
+        populateBaseResponseDto(dto, agent);
         return dto;
     }
 
-    private StaffDto convertToGenericStaffDto(Staff staff) {
+    private StaffResponseDto convertToGenericStaffResponseDto(Staff staff) {
         if (staff instanceof Admin admin) {
-            return convertToAdminDto(admin);
+            return convertToAdminResponseDto(admin);
         } else if (staff instanceof BankOfficer officer) {
-            return convertToBankOfficerDto(officer);
+            return convertToBankOfficerResponseDto(officer);
         } else if (staff instanceof FraudAnalyst analyst) {
-            return convertToFraudAnalystDto(analyst);
+            return convertToFraudAnalystResponseDto(analyst);
         } else if (staff instanceof CustomerServiceAgent agent) {
-            return convertToCustomerServiceAgentDto(agent);
+            return convertToCustomerServiceAgentResponseDto(agent);
         }
-        StaffDto dto = new StaffDto();
-        populateBaseDto(dto, staff);
+        StaffResponseDto dto = new StaffResponseDto();
+        populateBaseResponseDto(dto, staff);
         return dto;
     }
 
-    private void populateBaseDto(StaffDto dto, Staff staff) {
+    private void populateBaseResponseDto(StaffResponseDto dto, Staff staff) {
         dto.setStaffId(staff.getStaffId());
         dto.setUserId(staff.getUserId());
         dto.setEmpName(staff.getEmpName());

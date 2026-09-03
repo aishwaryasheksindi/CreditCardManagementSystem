@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
@@ -40,7 +41,7 @@ class CardServiceTest {
 
     @Test
     void testAddCard_AvailableLimitExceedsCreditLimit_ThrowsException() {
-        CardDto cardDto = new CardDto();
+        CardRequestDto cardDto = new CardRequestDto();
         cardDto.setCreditLimit(new BigDecimal("50000.00"));
         cardDto.setAvailableLimit(new BigDecimal("60000.00"));
 
@@ -53,7 +54,7 @@ class CardServiceTest {
 
     @Test
     void testAddCard_ValidLimits_Success() {
-        CardDto cardDto = new CardDto();
+        CardRequestDto cardDto = new CardRequestDto();
         cardDto.setCustomerId("CUST1001");
         cardDto.setCardTypeId("CT1001");
         cardDto.setCreditLimit(new BigDecimal("50000.00"));
@@ -77,7 +78,7 @@ class CardServiceTest {
         when(cardTypeRepository.findById("CT1001")).thenReturn(Optional.of(cardType));
         when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        CardDto result = cardService.addCard(cardDto);
+        CardResponseDto result = cardService.addCard(cardDto);
 
         assertNotNull(result);
         assertEquals(new BigDecimal("50000.00"), result.getCreditLimit());
@@ -86,7 +87,7 @@ class CardServiceTest {
 
     @Test
     void testUpdateCard_AvailableLimitExceedsCreditLimit_ThrowsException() {
-        CardDto cardDto = new CardDto();
+        CardRequestDto cardDto = new CardRequestDto();
         cardDto.setCreditLimit(new BigDecimal("50000.00"));
         cardDto.setAvailableLimit(new BigDecimal("70000.00"));
 

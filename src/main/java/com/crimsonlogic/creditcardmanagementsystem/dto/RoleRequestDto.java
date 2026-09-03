@@ -3,9 +3,7 @@ package com.crimsonlogic.creditcardmanagementsystem.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-public class RoleDto {
-
-    private String roleId;
+public class RoleRequestDto {
 
     @NotBlank(message = "Role name is required")
     @Pattern(
@@ -17,21 +15,12 @@ public class RoleDto {
     @NotBlank(message = "Role description is required")
     private String description;
 
-    public RoleDto() {
+    public RoleRequestDto() {
     }
 
-    public RoleDto(String roleId, String roleName, String description) {
-        this.roleId = roleId;
+    public RoleRequestDto(String roleName, String description) {
         this.roleName = roleName;
         this.description = description;
-    }
-
-    public String getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
     }
 
     public String getRoleName() {

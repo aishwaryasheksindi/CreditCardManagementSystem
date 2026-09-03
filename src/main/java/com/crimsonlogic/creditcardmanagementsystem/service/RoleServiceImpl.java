@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.RoleDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.RoleRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.RoleResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
@@ -17,17 +18,17 @@ public class RoleServiceImpl implements IRoleService {
     }
 
     @Override
-    public RoleDto addRole(RoleDto roleDto) {
+    public RoleResponseDto addRole(RoleRequestDto roleRequestDto) {
 
         Role role = new Role();
 
         role.setRoleId(IdGenerationUtil.generateRoleId());
-        role.setRoleName(roleDto.getRoleName());
-        role.setDescription(roleDto.getDescription());
+        role.setRoleName(roleRequestDto.getRoleName());
+        role.setDescription(roleRequestDto.getDescription());
 
         Role savedRole = roleRepository.save(role);
 
-        RoleDto responseDto = new RoleDto();
+        RoleResponseDto responseDto = new RoleResponseDto();
 
         responseDto.setRoleId(savedRole.getRoleId());
         responseDto.setRoleName(savedRole.getRoleName());
@@ -37,12 +38,12 @@ public class RoleServiceImpl implements IRoleService {
     }
 
     @Override
-    public RoleDto getRoleById(String roleId) {
+    public RoleResponseDto getRoleById(String roleId) {
 
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-        RoleDto responseDto = new RoleDto();
+        RoleResponseDto responseDto = new RoleResponseDto();
 
         responseDto.setRoleId(role.getRoleId());
         responseDto.setRoleName(role.getRoleName());

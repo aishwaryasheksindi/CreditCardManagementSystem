@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.StatementDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Statement;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StatementRepository;
@@ -40,7 +41,7 @@ class StatementServiceTest {
     void testAddStatement_MinimumDueCalculation_FloorApplied() {
         // Closing balance: 25000 + 1000 - 0 - 0 + 0 + 0 = 26000 -> 5% is 1300 (> 200)
         // Closing balance: 1000 -> 5% is 50 (< 200, so floor 200 applied)
-        StatementDto inputDto = new StatementDto();
+        StatementRequestDto inputDto = new StatementRequestDto();
         inputDto.setCardId("CARD1001");
         inputDto.setStatementDate(LocalDate.now());
         inputDto.setDueDate(LocalDate.now().plusDays(20));
@@ -55,7 +56,7 @@ class StatementServiceTest {
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        StatementDto result = statementService.addStatement(inputDto);
+        StatementResponseDto result = statementService.addStatement(inputDto);
 
         assertNotNull(result);
         assertEquals(new BigDecimal("1000.00"), result.getClosingBalance());
@@ -66,7 +67,7 @@ class StatementServiceTest {
     @Test
     void testAddStatement_MinimumDueCalculation_AboveFloor() {
         // Closing: 25000 + 40000 - 20000 - 3000 + 1000 = 43000 -> 5% is 2150.00
-        StatementDto inputDto = new StatementDto();
+        StatementRequestDto inputDto = new StatementRequestDto();
         inputDto.setCardId("CARD1001");
         inputDto.setStatementDate(LocalDate.now());
         inputDto.setDueDate(LocalDate.now().plusDays(20));
@@ -81,7 +82,7 @@ class StatementServiceTest {
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        StatementDto result = statementService.addStatement(inputDto);
+        StatementResponseDto result = statementService.addStatement(inputDto);
 
         assertNotNull(result);
         assertEquals(new BigDecimal("43000.00"), result.getClosingBalance());
@@ -90,7 +91,7 @@ class StatementServiceTest {
 
     @Test
     void testAddStatement_ZeroBalance_MinimumDueZero() {
-        StatementDto inputDto = new StatementDto();
+        StatementRequestDto inputDto = new StatementRequestDto();
         inputDto.setCardId("CARD1001");
         inputDto.setStatementDate(LocalDate.now());
         inputDto.setDueDate(LocalDate.now().plusDays(20));
@@ -105,7 +106,7 @@ class StatementServiceTest {
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        StatementDto result = statementService.addStatement(inputDto);
+        StatementResponseDto result = statementService.addStatement(inputDto);
 
         assertNotNull(result);
         assertEquals(BigDecimal.ZERO, result.getClosingBalance());

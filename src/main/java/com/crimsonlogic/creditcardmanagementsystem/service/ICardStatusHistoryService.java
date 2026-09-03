@@ -1,14 +1,15 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardStatusHistoryResponseDto;
 
 public interface ICardStatusHistoryService {
 
-    CardStatusHistoryDto addCardStatusHistory(
-            CardStatusHistoryDto cardStatusHistoryDto
+    CardStatusHistoryResponseDto addCardStatusHistory(
+            CardStatusHistoryRequestDto cardStatusHistoryDto
     );
 
-    CardStatusHistoryDto getCardStatusHistoryById(
+    CardStatusHistoryResponseDto getCardStatusHistoryById(
             String cardStatusHistoryId
     );
 }

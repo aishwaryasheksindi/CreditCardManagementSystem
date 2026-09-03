@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CardDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ICardService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,10 +19,10 @@ public class CardController {
     }
 
     @PostMapping
-    public ResponseEntity<CardDto> addCard(
-            @Valid @RequestBody CardDto cardDto) {
+    public ResponseEntity<CardResponseDto> addCard(
+            @Valid @RequestBody CardRequestDto cardDto) {
 
-        CardDto savedCard = cardService.addCard(cardDto);
+        CardResponseDto savedCard = cardService.addCard(cardDto);
 
         return new ResponseEntity<>(
                 savedCard,
@@ -30,20 +31,20 @@ public class CardController {
     }
 
     @GetMapping("/{cardId}")
-    public ResponseEntity<CardDto> getCardById(
+    public ResponseEntity<CardResponseDto> getCardById(
             @PathVariable String cardId) {
 
-        CardDto cardDto = cardService.getCardById(cardId);
+        CardResponseDto cardDto = cardService.getCardById(cardId);
 
         return ResponseEntity.ok(cardDto);
     }
 
     @PutMapping("/{cardId}")
-    public ResponseEntity<CardDto> updateCard(
+    public ResponseEntity<CardResponseDto> updateCard(
             @PathVariable String cardId,
-            @Valid @RequestBody CardDto cardDto) {
+            @Valid @RequestBody CardRequestDto cardDto) {
 
-        CardDto updatedCard = cardService.updateCard(cardId, cardDto);
+        CardResponseDto updatedCard = cardService.updateCard(cardId, cardDto);
 
         return ResponseEntity.ok(updatedCard);
     }

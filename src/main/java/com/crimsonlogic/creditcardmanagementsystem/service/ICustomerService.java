@@ -1,14 +1,15 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerResponseDto;
 
 import java.util.List;
 
 public interface ICustomerService {
 
-    CustomerDto getCustomerById(String customerId);
+    CustomerResponseDto getCustomerById(String customerId);
 
-    CustomerDto updateCustomer(String customerId, CustomerDto customerDto);
+    CustomerResponseDto updateCustomer(String customerId, CustomerRequestDto customerDto);
 
-    List<CustomerDto> searchCustomers(String name, String phoneNumber, String email);
+    List<CustomerResponseDto> searchCustomers(String name, String phoneNumber, String email);
 }

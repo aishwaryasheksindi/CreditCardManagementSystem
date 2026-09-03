@@ -1,16 +1,17 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.StatementDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.StatementResponseDto;
 
 import java.util.List;
 
 public interface IStatementService {
 
-    StatementDto addStatement(StatementDto statementDto);
+    StatementResponseDto addStatement(StatementRequestDto statementDto);
 
-    StatementDto getStatementById(String statementId);
+    StatementResponseDto getStatementById(String statementId);
 
-    List<StatementDto> getStatementsByCardId(String cardId);
+    List<StatementResponseDto> getStatementsByCardId(String cardId);
 
-    List<StatementDto> getAllStatements();
+    List<StatementResponseDto> getAllStatements();
 }

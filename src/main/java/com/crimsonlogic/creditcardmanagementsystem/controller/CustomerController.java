@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.ICustomerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,12 @@ public class CustomerController {
 
     // Search customers
     @GetMapping("/search")
-    public ResponseEntity<List<CustomerDto>> searchCustomers(
+    public ResponseEntity<List<CustomerResponseDto>> searchCustomers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String email) {
 
-        List<CustomerDto> customers =
+        List<CustomerResponseDto> customers =
                 customerService.searchCustomers(name, phoneNumber, email);
 
         return ResponseEntity.ok(customers);
@@ -33,10 +34,10 @@ public class CustomerController {
 
     // Get customer by ID
     @GetMapping("/{customerId}")
-    public ResponseEntity<CustomerDto> getCustomerById(
+    public ResponseEntity<CustomerResponseDto> getCustomerById(
             @PathVariable String customerId) {
 
-        CustomerDto customerDto =
+        CustomerResponseDto customerDto =
                 customerService.getCustomerById(customerId);
 
         return ResponseEntity.ok(customerDto);
@@ -44,11 +45,11 @@ public class CustomerController {
 
     // Update customer
     @PutMapping("/{customerId}")
-    public ResponseEntity<CustomerDto> updateCustomer(
+    public ResponseEntity<CustomerResponseDto> updateCustomer(
             @PathVariable String customerId,
-            @Valid @RequestBody CustomerDto customerDto) {
+            @Valid @RequestBody CustomerRequestDto customerDto) {
 
-        CustomerDto updatedCustomer =
+        CustomerResponseDto updatedCustomer =
                 customerService.updateCustomer(customerId, customerDto);
 
         return ResponseEntity.ok(updatedCustomer);

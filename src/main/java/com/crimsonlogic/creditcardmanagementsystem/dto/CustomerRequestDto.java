@@ -9,9 +9,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-public class CustomerDto {
-
-    private String customerId;
+public class CustomerRequestDto {
 
     @NotBlank(message = "Name is required")
     @Pattern(
@@ -48,15 +46,20 @@ public class CustomerDto {
 
     private CustomerStatus customerStatus;
 
-    public CustomerDto() {
+    public CustomerRequestDto() {
     }
 
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
+    public CustomerRequestDto(String name, String email, String phoneNumber, String address, LocalDate dateOfBirth, String employment, String incomeRange, KycStatus kycStatus, String creditProfile, CustomerStatus customerStatus) {
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.dateOfBirth = dateOfBirth;
+        this.employment = employment;
+        this.incomeRange = incomeRange;
+        this.kycStatus = kycStatus;
+        this.creditProfile = creditProfile;
+        this.customerStatus = customerStatus;
     }
 
     public String getName() {

@@ -1,10 +1,11 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
-import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionResponseDto;
 
 public interface ITransactionService {
 
-    TransactionDto addTransaction(TransactionDto transactionDto);
+    TransactionResponseDto addTransaction(TransactionRequestDto transactionDto);
 
-    TransactionDto getTransactionById(String transactionId);
+    TransactionResponseDto getTransactionById(String transactionId);
 }
