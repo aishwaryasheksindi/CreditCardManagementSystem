@@ -4,6 +4,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
@@ -20,11 +21,14 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
 
     private final KycDocumentRepository kycDocumentRepository;
     private final CustomerRepository customerRepository;
+    private final IAuditLogService auditLogService;
 
     public KycDocumentServiceImpl(KycDocumentRepository kycDocumentRepository,
-                                  CustomerRepository customerRepository) {
+                                  CustomerRepository customerRepository,
+                                  IAuditLogService auditLogService) {
         this.kycDocumentRepository = kycDocumentRepository;
         this.customerRepository = customerRepository;
+        this.auditLogService = auditLogService;
     }
 
     private String generateUniqueKycDocumentId() {
@@ -97,6 +101,8 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         customer.setKycStatus(KycStatus.VERIFIED);
         customerRepository.save(customer);
 
+        auditLogService.logAction(verifiedByStaffId, AuditAction.STATUS_CHANGE, "KycDocument", kycDocumentId, "KYC document VERIFIED by staff " + verifiedByStaffId);
+
         return convertToResponseDto(saved);
     }
 
@@ -117,6 +123,8 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Linked customer not found with ID: " + document.getCustomerId()));
         customer.setKycStatus(KycStatus.REJECTED);
         customerRepository.save(customer);
+
+        auditLogService.logAction(verifiedByStaffId, AuditAction.STATUS_CHANGE, "KycDocument", kycDocumentId, "KYC document REJECTED by staff " + verifiedByStaffId);
 
         return convertToResponseDto(saved);
     }

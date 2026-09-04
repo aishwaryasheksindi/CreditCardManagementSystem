@@ -4,6 +4,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.DisputeRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.DisputeResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.DisputeUpdateRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Dispute;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.DisputeStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
@@ -22,13 +23,16 @@ public class DisputeServiceImpl implements IDisputeService {
     private final DisputeRepository disputeRepository;
     private final CustomerRepository customerRepository;
     private final TransactionRepository transactionRepository;
+    private final IAuditLogService auditLogService;
 
     public DisputeServiceImpl(DisputeRepository disputeRepository,
                               CustomerRepository customerRepository,
-                              TransactionRepository transactionRepository) {
+                              TransactionRepository transactionRepository,
+                              IAuditLogService auditLogService) {
         this.disputeRepository = disputeRepository;
         this.customerRepository = customerRepository;
         this.transactionRepository = transactionRepository;
+        this.auditLogService = auditLogService;
     }
 
     private String generateUniqueDisputeId() {
@@ -67,6 +71,7 @@ public class DisputeServiceImpl implements IDisputeService {
         dispute.setRaisedAt(LocalDateTime.now());
 
         Dispute saved = disputeRepository.save(dispute);
+        auditLogService.logAction(requestDto.getCustomerId(), AuditAction.CREATE, "Dispute", saved.getDisputeId(), "Dispute raised: " + requestDto.getDisputeType());
         return convertToResponseDto(saved);
     }
 

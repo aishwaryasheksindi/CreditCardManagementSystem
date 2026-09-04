@@ -5,6 +5,8 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
+import com.crimsonlogic.creditcardmanagementsystem.enums.CardStatus;
 import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.VerificationLockedException;
@@ -20,13 +22,16 @@ public class CardServiceImpl implements ICardService {
     private final CardRepository cardRepository;
     private final CustomerRepository customerRepository;
     private final CardTypeRepository cardTypeRepository;
+    private final IAuditLogService auditLogService;
 
     public CardServiceImpl(CardRepository cardRepository,
                            CustomerRepository customerRepository,
-                           CardTypeRepository cardTypeRepository) {
+                           CardTypeRepository cardTypeRepository,
+                           IAuditLogService auditLogService) {
         this.cardRepository = cardRepository;
         this.customerRepository = customerRepository;
         this.cardTypeRepository = cardTypeRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -82,6 +87,8 @@ public class CardServiceImpl implements ICardService {
 
         Card savedCard = cardRepository.save(card);
 
+        auditLogService.logAction(cardDto.getCustomerId(), AuditAction.CREATE, "Card", savedCard.getCardId(), "New card issued for customer " + cardDto.getCustomerId());
+
         return convertToResponseDto(savedCard);
     }
 
@@ -112,6 +119,8 @@ public class CardServiceImpl implements ICardService {
                                 "Card not found with ID: " + cardId
                         )
                 );
+
+        CardStatus oldStatus = card.getCardStatus();
 
         if (cardDto.getCardReference() != null) {
             card.setCardReference(cardDto.getCardReference());
@@ -152,6 +161,17 @@ public class CardServiceImpl implements ICardService {
         }
 
         Card savedCard = cardRepository.save(card);
+
+        if (oldStatus != null && savedCard.getCardStatus() != null && oldStatus != savedCard.getCardStatus()) {
+            auditLogService.logAction(
+                    card.getCustomer() != null ? card.getCustomer().getCustomerId() : null,
+                    AuditAction.STATUS_CHANGE,
+                    "Card",
+                    cardId,
+                    "Card status changed from " + oldStatus + " to " + savedCard.getCardStatus()
+            );
+        }
+
         return convertToResponseDto(savedCard);
     }
 

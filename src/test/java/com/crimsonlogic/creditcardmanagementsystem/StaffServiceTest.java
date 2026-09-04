@@ -3,6 +3,7 @@ package com.crimsonlogic.creditcardmanagementsystem;
 import com.crimsonlogic.creditcardmanagementsystem.dto.*;
 import com.crimsonlogic.creditcardmanagementsystem.entity.*;
 import com.crimsonlogic.creditcardmanagementsystem.repository.*;
+import com.crimsonlogic.creditcardmanagementsystem.service.IAuditLogService;
 import com.crimsonlogic.creditcardmanagementsystem.service.StaffServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +39,9 @@ class StaffServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private IAuditLogService auditLogService;
+
     @InjectMocks
     private StaffServiceImpl staffService;
 
@@ -63,6 +67,13 @@ class StaffServiceTest {
         assertNotNull(result.getStaffId());
         assertTrue(result.getStaffId().startsWith("STF"));
         assertEquals("System Admin", result.getEmpName());
+        verify(auditLogService, times(1)).logAction(
+                eq("USR1001"),
+                eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.CREATE),
+                eq("Staff"),
+                any(),
+                contains("New Admin staff record created")
+        );
     }
 
     @Test

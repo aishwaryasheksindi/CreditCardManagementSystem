@@ -12,6 +12,7 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.service.CardServiceImpl;
+import com.crimsonlogic.creditcardmanagementsystem.service.IAuditLogService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +38,9 @@ class CardServiceTest {
 
     @Mock
     private CardTypeRepository cardTypeRepository;
+
+    @Mock
+    private IAuditLogService auditLogService;
 
     @InjectMocks
     private CardServiceImpl cardService;
@@ -120,5 +124,34 @@ class CardServiceTest {
         });
 
         assertEquals("Available limit cannot exceed credit limit", ex.getMessage());
+    }
+
+    @Test
+    void testUpdateCard_StatusChange_LogsAuditAction() {
+        String cardId = "CARD1001";
+        Card existingCard = new Card();
+        existingCard.setCardId(cardId);
+        existingCard.setCardStatus(CardStatus.ACTIVE);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        existingCard.setCustomer(customer);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CardRequestDto updateDto = new CardRequestDto();
+        updateDto.setCardStatus(CardStatus.BLOCKED);
+
+        CardResponseDto response = cardService.updateCard(cardId, updateDto);
+
+        assertNotNull(response);
+        assertEquals(CardStatus.BLOCKED, response.getCardStatus());
+        verify(auditLogService, times(1)).logAction(
+                eq("CUST1001"),
+                eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE),
+                eq("Card"),
+                eq(cardId),
+                contains("Card status changed from ACTIVE to BLOCKED")
+        );
     }
 }

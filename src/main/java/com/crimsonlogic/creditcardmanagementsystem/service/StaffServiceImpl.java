@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.*;
 import com.crimsonlogic.creditcardmanagementsystem.entity.*;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.*;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
@@ -19,19 +20,22 @@ public class StaffServiceImpl implements IStaffService {
     private final FraudAnalystRepository fraudAnalystRepository;
     private final CustomerServiceAgentRepository customerServiceAgentRepository;
     private final UserRepository userRepository;
+    private final IAuditLogService auditLogService;
 
     public StaffServiceImpl(StaffRepository staffRepository,
                             AdminRepository adminRepository,
                             BankOfficerRepository bankOfficerRepository,
                             FraudAnalystRepository fraudAnalystRepository,
                             CustomerServiceAgentRepository customerServiceAgentRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            IAuditLogService auditLogService) {
         this.staffRepository = staffRepository;
         this.adminRepository = adminRepository;
         this.bankOfficerRepository = bankOfficerRepository;
         this.fraudAnalystRepository = fraudAnalystRepository;
         this.customerServiceAgentRepository = customerServiceAgentRepository;
         this.userRepository = userRepository;
+        this.auditLogService = auditLogService;
     }
 
     private String generateUniqueStaffId() {
@@ -64,6 +68,7 @@ public class StaffServiceImpl implements IStaffService {
         admin.setEmpStatus(adminDto.getEmpStatus());
 
         Admin saved = adminRepository.save(admin);
+        auditLogService.logAction(saved.getUserId(), AuditAction.CREATE, "Staff", saved.getStaffId(), "New Admin staff record created");
         return convertToAdminResponseDto(saved);
     }
 
@@ -98,6 +103,7 @@ public class StaffServiceImpl implements IStaffService {
         officer.setBranchCode(bankOfficerDto.getBranchCode());
 
         BankOfficer saved = bankOfficerRepository.save(officer);
+        auditLogService.logAction(saved.getUserId(), AuditAction.CREATE, "Staff", saved.getStaffId(), "New BankOfficer staff record created");
         return convertToBankOfficerResponseDto(saved);
     }
 
@@ -131,6 +137,7 @@ public class StaffServiceImpl implements IStaffService {
         analyst.setEmpStatus(fraudAnalystDto.getEmpStatus());
 
         FraudAnalyst saved = fraudAnalystRepository.save(analyst);
+        auditLogService.logAction(saved.getUserId(), AuditAction.CREATE, "Staff", saved.getStaffId(), "New FraudAnalyst staff record created");
         return convertToFraudAnalystResponseDto(saved);
     }
 
@@ -164,6 +171,7 @@ public class StaffServiceImpl implements IStaffService {
         agent.setEmpStatus(agentDto.getEmpStatus());
 
         CustomerServiceAgent saved = customerServiceAgentRepository.save(agent);
+        auditLogService.logAction(saved.getUserId(), AuditAction.CREATE, "Staff", saved.getStaffId(), "New CustomerServiceAgent staff record created");
         return convertToCustomerServiceAgentResponseDto(saved);
     }
 

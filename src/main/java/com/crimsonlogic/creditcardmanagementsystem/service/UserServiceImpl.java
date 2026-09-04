@@ -7,6 +7,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
 import com.crimsonlogic.creditcardmanagementsystem.entity.User;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
@@ -19,13 +20,16 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final IAuditLogService auditLogService;
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           IAuditLogService auditLogService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -60,6 +64,8 @@ public class UserServiceImpl implements IUserService {
 
         // Save User
         User savedUser = userRepository.save(user);
+
+        auditLogService.logAction(savedUser.getUserId(), AuditAction.CREATE, "User", savedUser.getUserId(), "New user account created: " + savedUser.getUsername());
 
         return convertToResponseDto(savedUser);
     }
