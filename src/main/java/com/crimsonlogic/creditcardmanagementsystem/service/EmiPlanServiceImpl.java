@@ -4,6 +4,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.EmiPlanRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.EmiPlanResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.EmiPlan;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.EmiPlanRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionRepository;
@@ -11,6 +12,7 @@ import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,11 +23,14 @@ public class EmiPlanServiceImpl implements IEmiPlanService {
 
     private final EmiPlanRepository emiPlanRepository;
     private final TransactionRepository transactionRepository;
+    private final IAuditLogService auditLogService;
 
     public EmiPlanServiceImpl(EmiPlanRepository emiPlanRepository,
-                              TransactionRepository transactionRepository) {
+                              TransactionRepository transactionRepository,
+                              IAuditLogService auditLogService) {
         this.emiPlanRepository = emiPlanRepository;
         this.transactionRepository = transactionRepository;
+        this.auditLogService = auditLogService;
     }
 
     private String generateUniqueEmiPlanId() {
@@ -48,7 +53,7 @@ public class EmiPlanServiceImpl implements IEmiPlanService {
 
     @Override
     public EmiPlanResponseDto createEmiPlan(EmiPlanRequestDto requestDto) {
-        validateAndGetTransaction(requestDto.getTransactionId());
+        Transaction transaction = validateAndGetTransaction(requestDto.getTransactionId());
 
         EmiPlan emiPlan = new EmiPlan();
         emiPlan.setEmiPlanId(generateUniqueEmiPlanId());
@@ -62,8 +67,24 @@ public class EmiPlanServiceImpl implements IEmiPlanService {
         emiPlan.setEndDate(requestDto.getEndDate());
         emiPlan.setOutstandingAmount(requestDto.getOutstandingAmount());
         emiPlan.setStatus(requestDto.getStatus());
+        emiPlan.setNextDueDate(requestDto.getNextDueDate() != null ? requestDto.getNextDueDate() : requestDto.getStartDate().plusMonths(1));
+        emiPlan.setLateFeeAmount(BigDecimal.ZERO);
+        emiPlan.setMissedInstallments(0);
 
         EmiPlan savedEmiPlan = emiPlanRepository.save(emiPlan);
+
+        String customerId = (transaction.getCard() != null && transaction.getCard().getCustomer() != null)
+                ? transaction.getCard().getCustomer().getCustomerId()
+                : "SYSTEM";
+
+        auditLogService.logAction(
+                customerId,
+                AuditAction.CREATE,
+                "EmiPlan",
+                savedEmiPlan.getEmiPlanId(),
+                "EMI plan created for transaction " + requestDto.getTransactionId() + " with tenure " + requestDto.getTenureMonths() + " months"
+        );
+
         return convertToResponseDto(savedEmiPlan);
     }
 
@@ -119,8 +140,51 @@ public class EmiPlanServiceImpl implements IEmiPlanService {
         emiPlanRepository.delete(emiPlan);
     }
 
+    @Override
+    public EmiPlanResponseDto recordLatePayment(String emiPlanId) {
+        EmiPlan emiPlan = emiPlanRepository.findById(emiPlanId)
+                .orElseThrow(() -> new ResourceNotFoundException("EMI Plan not found with ID: " + emiPlanId));
+
+        if (emiPlan.getNextDueDate() == null || !LocalDate.now().isAfter(emiPlan.getNextDueDate())) {
+            throw new IllegalArgumentException("EMI payment is not overdue");
+        }
+
+        // Rule #4: 2% of EMI amount, minimum ₹100
+        BigDecimal lateFee = emiPlan.getEmiAmount().multiply(new BigDecimal("0.02")).setScale(2, java.math.RoundingMode.HALF_UP);
+        if (lateFee.compareTo(new BigDecimal("100.00")) < 0) {
+            lateFee = new BigDecimal("100.00");
+        }
+
+        BigDecimal currentLateFee = emiPlan.getLateFeeAmount() != null ? emiPlan.getLateFeeAmount() : BigDecimal.ZERO;
+        emiPlan.setLateFeeAmount(currentLateFee.add(lateFee));
+
+        int missed = (emiPlan.getMissedInstallments() != null ? emiPlan.getMissedInstallments() : 0) + 1;
+        emiPlan.setMissedInstallments(missed);
+
+        // Advance next due date by 1 month
+        emiPlan.setNextDueDate(emiPlan.getNextDueDate().plusMonths(1));
+
+        EmiPlan savedEmiPlan = emiPlanRepository.save(emiPlan);
+
+        String customerId = "SYSTEM";
+        Transaction transaction = transactionRepository.findById(emiPlan.getTransactionId()).orElse(null);
+        if (transaction != null && transaction.getCard() != null && transaction.getCard().getCustomer() != null) {
+            customerId = transaction.getCard().getCustomer().getCustomerId();
+        }
+
+        auditLogService.logAction(
+                customerId,
+                AuditAction.UPDATE,
+                "EmiPlan",
+                emiPlanId,
+                "Late fee of ₹" + lateFee + " applied to EMI plan " + emiPlanId + ". Missed installments: " + missed
+        );
+
+        return convertToResponseDto(savedEmiPlan);
+    }
+
     private EmiPlanResponseDto convertToResponseDto(EmiPlan emiPlan) {
-        return new EmiPlanResponseDto(
+        EmiPlanResponseDto dto = new EmiPlanResponseDto(
                 emiPlan.getEmiPlanId(),
                 emiPlan.getTransactionId(),
                 emiPlan.getPrincipal(),
@@ -133,5 +197,9 @@ public class EmiPlanServiceImpl implements IEmiPlanService {
                 emiPlan.getOutstandingAmount(),
                 emiPlan.getStatus()
         );
+        dto.setNextDueDate(emiPlan.getNextDueDate());
+        dto.setLateFeeAmount(emiPlan.getLateFeeAmount());
+        dto.setMissedInstallments(emiPlan.getMissedInstallments());
+        return dto;
     }
 }

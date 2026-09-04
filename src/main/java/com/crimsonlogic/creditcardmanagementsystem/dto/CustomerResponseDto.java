@@ -18,6 +18,7 @@ public class CustomerResponseDto {
     private KycStatus kycStatus;
     private String creditProfile;
     private CustomerStatus customerStatus;
+    private String userId;
 
     public CustomerResponseDto() {
     }
@@ -122,5 +123,13 @@ public class CustomerResponseDto {
 
     public void setCustomerStatus(CustomerStatus customerStatus) {
         this.customerStatus = customerStatus;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

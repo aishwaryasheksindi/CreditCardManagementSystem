@@ -4,11 +4,13 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Payment;
+import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.PaymentRepository;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +25,19 @@ public class PaymentServiceImpl implements IPaymentService {
     private final PaymentRepository paymentRepository;
     private final CardRepository cardRepository;
     private final CustomerRepository customerRepository;
+    private final CurrentUserContext currentUserContext;
+    private final IAuditLogService auditLogService;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository,
                               CardRepository cardRepository,
-                              CustomerRepository customerRepository) {
+                              CustomerRepository customerRepository,
+                              CurrentUserContext currentUserContext,
+                              IAuditLogService auditLogService) {
         this.paymentRepository = paymentRepository;
         this.cardRepository = cardRepository;
         this.customerRepository = customerRepository;
+        this.currentUserContext = currentUserContext;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -70,6 +78,15 @@ public class PaymentServiceImpl implements IPaymentService {
         }
 
         Payment savedPayment = paymentRepository.save(payment);
+
+        auditLogService.logAction(
+                paymentDto.getCustomerId(),
+                AuditAction.CREATE,
+                "Payment",
+                savedPayment.getPaymentId(),
+                "Payment processed with status " + paymentDto.getPaymentStatus() + " for amount " + paymentDto.getAmount()
+        );
+
         return convertToResponseDto(savedPayment);
     }
 
@@ -77,11 +94,13 @@ public class PaymentServiceImpl implements IPaymentService {
     public PaymentResponseDto getPaymentById(String paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
+        currentUserContext.assertCustomerOwnership(payment.getCustomerId());
         return convertToResponseDto(payment);
     }
 
     @Override
     public List<PaymentResponseDto> getPaymentsByCustomerId(String customerId) {
+        currentUserContext.assertCustomerOwnership(customerId);
         return paymentRepository.findByCustomerId(customerId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());

@@ -35,6 +35,12 @@ class PaymentServiceTest {
     @Mock
     private CustomerRepository customerRepository;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.service.IAuditLogService auditLogService;
+
     @InjectMocks
     private PaymentServiceImpl paymentService;
 

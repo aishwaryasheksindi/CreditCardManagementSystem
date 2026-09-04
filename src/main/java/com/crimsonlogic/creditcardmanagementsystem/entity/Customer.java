@@ -38,6 +38,8 @@ public class Customer {
     @Enumerated(EnumType.STRING)
     private CustomerStatus customerStatus;
 
+    private String userId;
+
     public Customer() {
     }
 
@@ -127,5 +129,13 @@ public class Customer {
 
     public void setCustomerStatus(CustomerStatus customerStatus) {
         this.customerStatus = customerStatus;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

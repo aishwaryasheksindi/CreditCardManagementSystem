@@ -6,6 +6,7 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Statement;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StatementRepository;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +19,14 @@ public class StatementServiceImpl implements IStatementService {
 
     private final StatementRepository statementRepository;
     private final CardRepository cardRepository;
+    private final CurrentUserContext currentUserContext;
 
     public StatementServiceImpl(StatementRepository statementRepository,
-                                CardRepository cardRepository) {
+                                CardRepository cardRepository,
+                                CurrentUserContext currentUserContext) {
         this.statementRepository = statementRepository;
         this.cardRepository = cardRepository;
+        this.currentUserContext = currentUserContext;
     }
 
     @Override
@@ -81,11 +85,24 @@ public class StatementServiceImpl implements IStatementService {
     public StatementResponseDto getStatementById(String statementId) {
         Statement statement = statementRepository.findById(statementId)
                 .orElseThrow(() -> new ResourceNotFoundException("Statement not found with ID: " + statementId));
+
+        cardRepository.findById(statement.getCardId()).ifPresent(card -> {
+            if (card.getCustomer() != null) {
+                currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+            }
+        });
+
         return convertToResponseDto(statement);
     }
 
     @Override
     public List<StatementResponseDto> getStatementsByCardId(String cardId) {
+        cardRepository.findById(cardId).ifPresent(card -> {
+            if (card.getCustomer() != null) {
+                currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+            }
+        });
+
         return statementRepository.findByCardId(cardId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());

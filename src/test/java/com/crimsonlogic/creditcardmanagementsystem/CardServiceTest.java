@@ -28,6 +28,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardBlockRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
+import com.crimsonlogic.creditcardmanagementsystem.service.ICardStatusHistoryService;
+import org.springframework.security.access.AccessDeniedException;
+
 @ExtendWith(MockitoExtension.class)
 class CardServiceTest {
 
@@ -45,6 +50,12 @@ class CardServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ICardStatusHistoryService cardStatusHistoryService;
+
+    @Mock
+    private CurrentUserContext currentUserContext;
 
     @InjectMocks
     private CardServiceImpl cardService;
@@ -265,5 +276,140 @@ class CardServiceTest {
                 eq(cardId),
                 eq("Card auto-blocked after 3 failed PIN attempts")
         );
+    }
+
+    @Test
+    void testBlockCard_Success() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setCardStatus(CardStatus.ACTIVE);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        card.setCustomer(customer);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CardBlockRequestDto request = new CardBlockRequestDto(CardStatus.BLOCKED, "Suspected fraud");
+        CardResponseDto response = cardService.blockCard(cardId, request);
+
+        assertNotNull(response);
+        assertEquals(CardStatus.BLOCKED, response.getCardStatus());
+        verify(cardStatusHistoryService, times(1)).addCardStatusHistory(any());
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(cardId), contains("Suspected fraud"));
+    }
+
+    @Test
+    void testBlockCard_ClosedCard_ThrowsException() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setCardStatus(CardStatus.CLOSED);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+
+        CardBlockRequestDto request = new CardBlockRequestDto(CardStatus.BLOCKED, "Reason");
+        assertThrows(IllegalArgumentException.class, () -> cardService.blockCard(cardId, request));
+        verify(cardRepository, never()).save(card);
+    }
+
+    @Test
+    void testUnblockCard_Success_ResetsFailedAttempts() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setCardStatus(CardStatus.BLOCKED);
+        card.setFailedPinAttempts(3);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        card.setCustomer(customer);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CardResponseDto response = cardService.unblockCard(cardId);
+
+        assertNotNull(response);
+        assertEquals(CardStatus.ACTIVE, response.getCardStatus());
+        assertEquals(0, card.getFailedPinAttempts());
+        verify(cardStatusHistoryService, times(1)).addCardStatusHistory(any());
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(cardId), contains("unblocked"));
+    }
+
+    @Test
+    void testUnblockCard_NotBlocked_ThrowsException() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setCardStatus(CardStatus.LOST);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+
+        assertThrows(IllegalArgumentException.class, () -> cardService.unblockCard(cardId));
+    }
+
+    @Test
+    void testReplaceCard_Success() {
+        String oldCardId = "CARD1001";
+        Card oldCard = new Card();
+        oldCard.setCardId(oldCardId);
+        oldCard.setCardStatus(CardStatus.LOST);
+        oldCard.setCreditLimit(new BigDecimal("100000.00"));
+        oldCard.setAvailableLimit(new BigDecimal("25000.00"));
+        oldCard.setBillingCycle("15th");
+        oldCard.setInterestRate(new BigDecimal("14.0"));
+        oldCard.setAnnualFee(new BigDecimal("500.00"));
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        oldCard.setCustomer(customer);
+        CardType cardType = new CardType();
+        cardType.setCardTypeId("CT1001");
+        oldCard.setCardType(cardType);
+
+        when(cardRepository.findById(oldCardId)).thenReturn(Optional.of(oldCard));
+        when(cardRepository.existsById(any())).thenReturn(false);
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CardResponseDto replacement = cardService.replaceCard(oldCardId);
+
+        assertNotNull(replacement);
+        assertEquals(CardStatus.CLOSED, oldCard.getCardStatus());
+        assertEquals(CardStatus.ACTIVE, replacement.getCardStatus());
+        assertEquals(new BigDecimal("100000.00"), replacement.getCreditLimit());
+        assertEquals(new BigDecimal("100000.00"), replacement.getAvailableLimit()); // limit reset
+        assertNotNull(replacement.getExpiryDate());
+
+        verify(cardStatusHistoryService, times(2)).addCardStatusHistory(any());
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(oldCardId), contains("closed"));
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.CREATE), eq("Card"), anyString(), contains("Replacement"));
+    }
+
+    @Test
+    void testReplaceCard_NotLostOrStolen_ThrowsException() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setCardStatus(CardStatus.BLOCKED);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+
+        assertThrows(IllegalArgumentException.class, () -> cardService.replaceCard(cardId));
+    }
+
+    @Test
+    void testCrossCustomerCardAccess_ThrowsAccessDeniedException() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST_OTHER");
+        card.setCustomer(customer);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        doThrow(new AccessDeniedException("You are not authorized to access this resource"))
+                .when(currentUserContext).assertCustomerOwnership("CUST_OTHER");
+
+        assertThrows(AccessDeniedException.class, () -> cardService.getCardById(cardId));
     }
 }

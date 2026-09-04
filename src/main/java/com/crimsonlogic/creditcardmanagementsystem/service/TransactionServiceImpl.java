@@ -13,8 +13,14 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionCategoryRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.MerchantRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionRepository;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.EnumSet;
+import java.util.Set;
 
 @Service
 public class TransactionServiceImpl implements ITransactionService {
@@ -24,13 +30,15 @@ public class TransactionServiceImpl implements ITransactionService {
     private final MerchantRepository merchantRepository;
     private final TransactionCategoryRepository categoryRepository;
     private final ICardService cardService;
+    private final CurrentUserContext currentUserContext;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             CardRepository cardRepository,
             MerchantRepository merchantRepository,
             TransactionCategoryRepository categoryRepository,
-            ICardService cardService
+            ICardService cardService,
+            CurrentUserContext currentUserContext
             ) {
 
         this.transactionRepository = transactionRepository;
@@ -38,9 +46,11 @@ public class TransactionServiceImpl implements ITransactionService {
         this.merchantRepository = merchantRepository;
         this.categoryRepository = categoryRepository;
         this.cardService = cardService;
+        this.currentUserContext = currentUserContext;
     }
 
     @Override
+    @Transactional
     public TransactionResponseDto addTransaction(TransactionRequestDto transactionDto) {
 
         // Generate unique transaction ID
@@ -71,6 +81,29 @@ public class TransactionServiceImpl implements ITransactionService {
                 throw new IllegalArgumentException("PIN is required for this transaction type");
             }
             cardService.verifyPin(card.getCardId(), transactionDto.getPin());
+        }
+
+        Set<TransactionType> DEBIT_TYPES = EnumSet.of(
+                TransactionType.PURCHASE, TransactionType.CASH_WITHDRAWAL,
+                TransactionType.EMI, TransactionType.FEE, TransactionType.INTEREST);
+        Set<TransactionType> CREDIT_TYPES = EnumSet.of(
+                TransactionType.REFUND, TransactionType.REVERSAL);
+
+        if (DEBIT_TYPES.contains(transactionDto.getTransactionType())) {
+            if (card.getAvailableLimit() == null || transactionDto.getAmount().compareTo(card.getAvailableLimit()) > 0) {
+                throw new IllegalArgumentException(
+                        "Transaction amount exceeds available credit limit");
+            }
+            card.setAvailableLimit(card.getAvailableLimit().subtract(transactionDto.getAmount()));
+            cardRepository.save(card);
+        } else if (CREDIT_TYPES.contains(transactionDto.getTransactionType())) {
+            BigDecimal currentAvailable = card.getAvailableLimit() != null ? card.getAvailableLimit() : BigDecimal.ZERO;
+            BigDecimal newAvailable = currentAvailable.add(transactionDto.getAmount());
+            if (card.getCreditLimit() != null && newAvailable.compareTo(card.getCreditLimit()) > 0) {
+                newAvailable = card.getCreditLimit();
+            }
+            card.setAvailableLimit(newAvailable);
+            cardRepository.save(card);
         }
 
         // Get Merchant
@@ -139,6 +172,10 @@ public class TransactionServiceImpl implements ITransactionService {
                                                 + transactionId
                                 )
                         );
+
+        if (transaction.getCard() != null && transaction.getCard().getCustomer() != null) {
+            currentUserContext.assertCustomerOwnership(transaction.getCard().getCustomer().getCustomerId());
+        }
 
         return convertToResponseDto(transaction);
     }

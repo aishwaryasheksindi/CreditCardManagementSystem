@@ -16,6 +16,9 @@ public class EmiPlanResponseDto {
     private LocalDate endDate;
     private BigDecimal outstandingAmount;
     private String status;
+    private LocalDate nextDueDate;
+    private BigDecimal lateFeeAmount;
+    private Integer missedInstallments;
 
     public EmiPlanResponseDto() {
     }
@@ -130,5 +133,29 @@ public class EmiPlanResponseDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDate getNextDueDate() {
+        return nextDueDate;
+    }
+
+    public void setNextDueDate(LocalDate nextDueDate) {
+        this.nextDueDate = nextDueDate;
+    }
+
+    public BigDecimal getLateFeeAmount() {
+        return lateFeeAmount;
+    }
+
+    public void setLateFeeAmount(BigDecimal lateFeeAmount) {
+        this.lateFeeAmount = lateFeeAmount;
+    }
+
+    public Integer getMissedInstallments() {
+        return missedInstallments;
+    }
+
+    public void setMissedInstallments(Integer missedInstallments) {
+        this.missedInstallments = missedInstallments;
     }
 }

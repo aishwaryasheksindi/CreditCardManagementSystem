@@ -47,6 +47,9 @@ class TransactionServiceTest {
     @Mock
     private ICardService cardService;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
     @InjectMocks
     private TransactionServiceImpl transactionService;
 
@@ -109,6 +112,8 @@ class TransactionServiceTest {
         Card activeCard = new Card();
         activeCard.setCardId("CARD1001");
         activeCard.setCardStatus(CardStatus.ACTIVE);
+        activeCard.setCreditLimit(new BigDecimal("50000.00"));
+        activeCard.setAvailableLimit(new BigDecimal("50000.00"));
 
         Merchant merchant = new Merchant();
         merchant.setMerchantId("MERCH1001");
@@ -138,6 +143,8 @@ class TransactionServiceTest {
         Card activeCard = new Card();
         activeCard.setCardId("CARD1001");
         activeCard.setCardStatus(CardStatus.ACTIVE);
+        activeCard.setCreditLimit(new BigDecimal("50000.00"));
+        activeCard.setAvailableLimit(new BigDecimal("50000.00"));
 
         Merchant merchant = new Merchant();
         merchant.setMerchantId("MERCH1001");
@@ -185,5 +192,46 @@ class TransactionServiceTest {
             transactionService.addTransaction(dto);
         });
         assertEquals("Card is BLOCKED — transactions are not allowed on this card", subsequentEx.getMessage());
+    }
+
+    @Test
+    void testAvailableLimitEnforcementAndRefund_Rule2AndRule5() {
+        // A card with ₹5,000 available limit
+        Card card = new Card();
+        card.setCardId("CARD1001");
+        card.setCardStatus(CardStatus.ACTIVE);
+        card.setCreditLimit(new BigDecimal("10000.00"));
+        card.setAvailableLimit(new BigDecimal("5000.00"));
+
+        Merchant merchant = new Merchant();
+        merchant.setMerchantId("MERCH1001");
+        TransactionCategory category = new TransactionCategory();
+        category.setCategoryId("CAT1001");
+
+        when(cardRepository.findById("CARD1001")).thenReturn(Optional.of(card));
+        when(merchantRepository.findById("MERCH1001")).thenReturn(Optional.of(merchant));
+        when(categoryRepository.findById("CAT1001")).thenReturn(Optional.of(category));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // a ₹4,000 PURCHASE succeeds and available drops to ₹1,000
+        TransactionRequestDto purchase1 = createSampleDto(TransactionType.PURCHASE, null);
+        purchase1.setAmount(new BigDecimal("4000.00"));
+        transactionService.addTransaction(purchase1);
+        assertEquals(new BigDecimal("1000.00"), card.getAvailableLimit());
+
+        // a further ₹2,000 PURCHASE is rejected
+        TransactionRequestDto purchase2 = createSampleDto(TransactionType.PURCHASE, null);
+        purchase2.setAmount(new BigDecimal("2000.00"));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.addTransaction(purchase2);
+        });
+        assertEquals("Transaction amount exceeds available credit limit", ex.getMessage());
+        assertEquals(new BigDecimal("1000.00"), card.getAvailableLimit()); // unchanged
+
+        // a ₹1,000 REFUND on that card brings available back to ₹2,000
+        TransactionRequestDto refund = createSampleDto(TransactionType.REFUND, null);
+        refund.setAmount(new BigDecimal("1000.00"));
+        transactionService.addTransaction(refund);
+        assertEquals(new BigDecimal("2000.00"), card.getAvailableLimit());
     }
 }

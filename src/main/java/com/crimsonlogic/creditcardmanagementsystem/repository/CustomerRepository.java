@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, String> {
@@ -15,4 +16,6 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
     List<Customer> findByPhoneNumber(String phoneNumber);
 
     List<Customer> findByEmail(String email);
+
+    Optional<Customer> findByUserId(String userId);
 }

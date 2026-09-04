@@ -1,11 +1,14 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
+import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerRegistrationRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CustomerResponseDto;
 
 import java.util.List;
 
 public interface ICustomerService {
+
+    CustomerResponseDto registerCustomer(CustomerRegistrationRequestDto registrationDto);
 
     CustomerResponseDto getCustomerById(String customerId);
 

@@ -46,6 +46,9 @@ public class SpringSecurityConfig {
                         // TODO: Add endpoint-level card ownership check for customers when user context is available; at minimum require authentication.
                         .requestMatchers(HttpMethod.POST, "/api/cards/*/set-pin").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/cards/*/verify-pin").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/cards/*/block").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/cards/*/unblock").hasAnyRole("ADMIN", "BANK_OFFICER")
+                        .requestMatchers(HttpMethod.POST, "/api/cards/*/replace").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .requestMatchers(HttpMethod.POST, "/api/cards/**").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .requestMatchers(HttpMethod.PUT, "/api/cards/**").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .requestMatchers(HttpMethod.GET, "/api/customers/search").hasAnyRole("ADMIN", "BANK_OFFICER", "CUSTOMER_SERVICE_AGENT")
@@ -59,6 +62,7 @@ public class SpringSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/fraud-alerts/**").hasAnyRole("ADMIN", "FRAUD_ANALYST")
                         .requestMatchers(HttpMethod.POST, "/api/kyc-documents/**").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .requestMatchers(HttpMethod.PUT, "/api/kyc-documents/**").hasAnyRole("ADMIN", "BANK_OFFICER")
+                        .requestMatchers(HttpMethod.POST, "/api/emi-plans/*/record-late-payment").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

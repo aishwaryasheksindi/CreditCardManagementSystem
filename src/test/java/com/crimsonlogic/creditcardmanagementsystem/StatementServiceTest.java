@@ -30,6 +30,9 @@ class StatementServiceTest {
     @Mock
     private CardRepository cardRepository;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
     @InjectMocks
     private StatementServiceImpl statementService;
 

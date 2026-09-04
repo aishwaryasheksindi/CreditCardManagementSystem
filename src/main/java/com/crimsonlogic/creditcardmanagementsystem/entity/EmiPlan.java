@@ -45,6 +45,13 @@ public class EmiPlan {
     @Column(nullable = false)
     private String status;
 
+    private LocalDate nextDueDate;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal lateFeeAmount = BigDecimal.ZERO;
+
+    private Integer missedInstallments = 0;
+
     public EmiPlan() {
     }
 
@@ -158,5 +165,29 @@ public class EmiPlan {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDate getNextDueDate() {
+        return nextDueDate;
+    }
+
+    public void setNextDueDate(LocalDate nextDueDate) {
+        this.nextDueDate = nextDueDate;
+    }
+
+    public BigDecimal getLateFeeAmount() {
+        return lateFeeAmount;
+    }
+
+    public void setLateFeeAmount(BigDecimal lateFeeAmount) {
+        this.lateFeeAmount = lateFeeAmount;
+    }
+
+    public Integer getMissedInstallments() {
+        return missedInstallments;
+    }
+
+    public void setMissedInstallments(Integer missedInstallments) {
+        this.missedInstallments = missedInstallments;
     }
 }

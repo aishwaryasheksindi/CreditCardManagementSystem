@@ -50,6 +50,8 @@ public class EmiPlanRequestDto {
     @Pattern(regexp = "ACTIVE|COMPLETED|CANCELLED", message = "Status must be ACTIVE, COMPLETED, or CANCELLED")
     private String status;
 
+    private LocalDate nextDueDate;
+
     public EmiPlanRequestDto() {
     }
 
@@ -153,5 +155,13 @@ public class EmiPlanRequestDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDate getNextDueDate() {
+        return nextDueDate;
+    }
+
+    public void setNextDueDate(LocalDate nextDueDate) {
+        this.nextDueDate = nextDueDate;
     }
 }

@@ -6,9 +6,11 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
 import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
+import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.KycDocumentRepository;
+import com.crimsonlogic.creditcardmanagementsystem.utility.DocumentValidationUtil;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 
@@ -49,11 +51,21 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     public KycDocumentResponseDto submitDocument(KycDocumentRequestDto requestDto) {
         validateCustomer(requestDto.getCustomerId());
 
+        DocumentValidationUtil.validate(requestDto.getDocumentType(), requestDto.getDocumentNumber());
+
+        String normalizedDocNumber = requestDto.getDocumentNumber().trim().toUpperCase();
+
+        if (kycDocumentRepository.findByDocumentTypeAndDocumentNumberAndStatus(
+                requestDto.getDocumentType(), normalizedDocNumber, KycStatus.VERIFIED).isPresent()) {
+            throw new DuplicateResourceException(
+                    "This " + requestDto.getDocumentType() + " is already verified against another customer account");
+        }
+
         KycDocument document = new KycDocument();
         document.setKycDocumentId(generateUniqueKycDocumentId());
         document.setCustomerId(requestDto.getCustomerId());
         document.setDocumentType(requestDto.getDocumentType());
-        document.setDocumentNumber(requestDto.getDocumentNumber());
+        document.setDocumentNumber(normalizedDocNumber);
         document.setDocumentUrl(requestDto.getDocumentUrl());
         document.setStatus(KycStatus.PENDING);
         document.setSubmittedAt(LocalDateTime.now());

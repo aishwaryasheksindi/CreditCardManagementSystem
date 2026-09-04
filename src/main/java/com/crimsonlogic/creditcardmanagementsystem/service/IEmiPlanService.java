@@ -17,5 +17,7 @@ public interface IEmiPlanService {
 
     EmiPlanResponseDto updateEmiPlan(String emiPlanId, EmiPlanRequestDto requestDto);
 
+    EmiPlanResponseDto recordLatePayment(String emiPlanId);
+
     void deleteEmiPlan(String emiPlanId);
 }

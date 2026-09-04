@@ -73,4 +73,29 @@ public class CardController {
         boolean verified = cardService.verifyPin(cardId, request.getPin());
         return ResponseEntity.ok(Collections.singletonMap("verified", verified));
     }
+
+    @PostMapping("/{cardId}/block")
+    public ResponseEntity<CardResponseDto> blockCard(
+            @PathVariable String cardId,
+            @Valid @RequestBody com.crimsonlogic.creditcardmanagementsystem.dto.CardBlockRequestDto requestDto) {
+
+        CardResponseDto blockedCard = cardService.blockCard(cardId, requestDto);
+        return ResponseEntity.ok(blockedCard);
+    }
+
+    @PostMapping("/{cardId}/unblock")
+    public ResponseEntity<CardResponseDto> unblockCard(
+            @PathVariable String cardId) {
+
+        CardResponseDto unblockedCard = cardService.unblockCard(cardId);
+        return ResponseEntity.ok(unblockedCard);
+    }
+
+    @PostMapping("/{cardId}/replace")
+    public ResponseEntity<CardResponseDto> replaceCard(
+            @PathVariable String cardId) {
+
+        CardResponseDto replacedCard = cardService.replaceCard(cardId);
+        return new ResponseEntity<>(replacedCard, HttpStatus.CREATED);
+    }
 }

@@ -7,6 +7,7 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
 import com.crimsonlogic.creditcardmanagementsystem.repository.EmiPlanRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionRepository;
 import com.crimsonlogic.creditcardmanagementsystem.service.EmiPlanServiceImpl;
+import com.crimsonlogic.creditcardmanagementsystem.service.IAuditLogService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,9 @@ class EmiPlanServiceTest {
 
     @Mock
     private TransactionRepository transactionRepository;
+
+    @Mock
+    private IAuditLogService auditLogService;
 
     @InjectMocks
     private EmiPlanServiceImpl emiPlanService;
@@ -119,5 +123,67 @@ class EmiPlanServiceTest {
         assertNotNull(result);
         assertEquals(emiPlanId, result.getEmiPlanId());
         assertEquals(9, result.getTenureMonths());
+    }
+
+    @Test
+    void testRecordLatePayment_Success_Min100Fee() {
+        String emiPlanId = "EMI100001";
+        LocalDate overdueDate = LocalDate.now().minusDays(5);
+        EmiPlan emiPlan = new EmiPlan();
+        emiPlan.setEmiPlanId(emiPlanId);
+        emiPlan.setTransactionId("TXN100003");
+        emiPlan.setEmiAmount(new BigDecimal("2000.00")); // 2% of 2000 is 40 -> minimum 100 applied
+        emiPlan.setNextDueDate(overdueDate);
+        emiPlan.setLateFeeAmount(BigDecimal.ZERO);
+        emiPlan.setMissedInstallments(0);
+
+        when(emiPlanRepository.findById(emiPlanId)).thenReturn(Optional.of(emiPlan));
+        when(emiPlanRepository.save(any(EmiPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        EmiPlanResponseDto response = emiPlanService.recordLatePayment(emiPlanId);
+
+        assertNotNull(response);
+        assertEquals(new BigDecimal("100.00"), response.getLateFeeAmount());
+        assertEquals(1, response.getMissedInstallments());
+        assertEquals(overdueDate.plusMonths(1), response.getNextDueDate());
+        verify(emiPlanRepository).save(emiPlan);
+        verify(auditLogService).logAction(anyString(), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.UPDATE), eq("EmiPlan"), eq(emiPlanId), contains("Late fee"));
+    }
+
+    @Test
+    void testRecordLatePayment_Success_AboveMin100Fee() {
+        String emiPlanId = "EMI100002";
+        LocalDate overdueDate = LocalDate.now().minusDays(2);
+        EmiPlan emiPlan = new EmiPlan();
+        emiPlan.setEmiPlanId(emiPlanId);
+        emiPlan.setTransactionId("TXN100004");
+        emiPlan.setEmiAmount(new BigDecimal("10000.00")); // 2% of 10000 is 200 (> 100)
+        emiPlan.setNextDueDate(overdueDate);
+        emiPlan.setLateFeeAmount(new BigDecimal("50.00")); // prior late fee
+        emiPlan.setMissedInstallments(1);
+
+        when(emiPlanRepository.findById(emiPlanId)).thenReturn(Optional.of(emiPlan));
+        when(emiPlanRepository.save(any(EmiPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        EmiPlanResponseDto response = emiPlanService.recordLatePayment(emiPlanId);
+
+        assertNotNull(response);
+        assertEquals(new BigDecimal("250.00"), response.getLateFeeAmount()); // 50 + 200
+        assertEquals(2, response.getMissedInstallments());
+        assertEquals(overdueDate.plusMonths(1), response.getNextDueDate());
+    }
+
+    @Test
+    void testRecordLatePayment_NotOverdue_ThrowsIllegalArgumentException() {
+        String emiPlanId = "EMI100003";
+        LocalDate futureDueDate = LocalDate.now().plusDays(10);
+        EmiPlan emiPlan = new EmiPlan();
+        emiPlan.setEmiPlanId(emiPlanId);
+        emiPlan.setNextDueDate(futureDueDate);
+
+        when(emiPlanRepository.findById(emiPlanId)).thenReturn(Optional.of(emiPlan));
+
+        assertThrows(IllegalArgumentException.class, () -> emiPlanService.recordLatePayment(emiPlanId));
+        verify(emiPlanRepository, never()).save(any());
     }
 }

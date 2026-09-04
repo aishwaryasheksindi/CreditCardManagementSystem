@@ -46,6 +46,12 @@ public class EmiPlanController {
         return ResponseEntity.ok(emiPlanService.updateEmiPlan(emiPlanId, requestDto));
     }
 
+    @PostMapping("/{emiPlanId}/record-late-payment")
+    public ResponseEntity<EmiPlanResponseDto> recordLatePayment(@PathVariable String emiPlanId) {
+        EmiPlanResponseDto updated = emiPlanService.recordLatePayment(emiPlanId);
+        return ResponseEntity.ok(updated);
+    }
+
     @DeleteMapping("/{emiPlanId}")
     public ResponseEntity<Void> deleteEmiPlan(@PathVariable String emiPlanId) {
         emiPlanService.deleteEmiPlan(emiPlanId);

@@ -19,6 +19,15 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
+    // Register new customer
+    @PostMapping("/register")
+    public ResponseEntity<CustomerResponseDto> registerCustomer(
+            @jakarta.validation.Valid @RequestBody com.crimsonlogic.creditcardmanagementsystem.dto.CustomerRegistrationRequestDto registrationDto) {
+
+        CustomerResponseDto createdCustomer = customerService.registerCustomer(registrationDto);
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(createdCustomer);
+    }
+
     // Search customers
     @GetMapping("/search")
     public ResponseEntity<List<CustomerResponseDto>> searchCustomers(
