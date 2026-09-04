@@ -6,6 +6,8 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.enums.CardStatus;
+import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
+import com.crimsonlogic.creditcardmanagementsystem.exception.VerificationLockedException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
@@ -69,6 +71,7 @@ class CardServiceTest {
 
         Customer customer = new Customer();
         customer.setCustomerId("CUST1001");
+        customer.setKycStatus(KycStatus.VERIFIED);
 
         CardType cardType = new CardType();
         cardType.setCardTypeId("CT1001");
@@ -83,6 +86,27 @@ class CardServiceTest {
         assertNotNull(result);
         assertEquals(new BigDecimal("50000.00"), result.getCreditLimit());
         assertEquals(new BigDecimal("50000.00"), result.getAvailableLimit());
+    }
+
+    @Test
+    void testAddCard_CustomerKycNotVerified_ThrowsVerificationLockedException() {
+        CardRequestDto cardDto = new CardRequestDto();
+        cardDto.setCustomerId("CUST1001");
+        cardDto.setCreditLimit(new BigDecimal("50000.00"));
+        cardDto.setAvailableLimit(new BigDecimal("50000.00"));
+
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        customer.setKycStatus(KycStatus.PENDING);
+
+        when(cardRepository.existsById(any())).thenReturn(false);
+        when(customerRepository.findById("CUST1001")).thenReturn(Optional.of(customer));
+
+        VerificationLockedException ex = assertThrows(VerificationLockedException.class, () -> {
+            cardService.addCard(cardDto);
+        });
+
+        assertTrue(ex.getMessage().contains("Cards can only be issued to VERIFIED customers"));
     }
 
     @Test

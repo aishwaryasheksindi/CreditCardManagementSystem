@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -13,8 +14,10 @@ public class User {
     @Id
     private String userId;
 
+    @Column(unique = true)
     private String username;
 
+    @Column(unique = true)
     private String email;
 
     private String passwordHash;

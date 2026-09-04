@@ -88,6 +88,13 @@ public class StaffController {
     }
 
     // General Staff endpoints
+    @GetMapping("/search")
+    public ResponseEntity<List<StaffResponseDto>> searchStaff(
+            @RequestParam(required = false) String empName,
+            @RequestParam(required = false) String empPhone) {
+        return ResponseEntity.ok(staffService.searchStaff(empName, empPhone));
+    }
+
     @GetMapping("/{staffId}")
     public ResponseEntity<StaffResponseDto> getStaffById(@PathVariable String staffId) {
         return ResponseEntity.ok(staffService.getStaffById(staffId));

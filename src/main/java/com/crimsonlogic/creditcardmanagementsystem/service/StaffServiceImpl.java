@@ -195,6 +195,36 @@ public class StaffServiceImpl implements IStaffService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<StaffResponseDto> searchStaff(String empName, String empPhone) {
+        java.util.List<Staff> results = new java.util.ArrayList<>();
+
+        if (empName != null && !empName.isBlank()) {
+            results.addAll(staffRepository.findByEmpNameContainingIgnoreCase(empName.trim()));
+        }
+
+        if (empPhone != null && !empPhone.isBlank()) {
+            results.addAll(staffRepository.findByEmpPhone(empPhone.trim()));
+        }
+
+        if ((empName == null || empName.isBlank())
+                && (empPhone == null || empPhone.isBlank())) {
+            results.addAll(staffRepository.findAll());
+        }
+
+        java.util.Set<String> seenIds = new java.util.LinkedHashSet<>();
+        java.util.List<Staff> distinctResults = new java.util.ArrayList<>();
+        for (Staff s : results) {
+            if (seenIds.add(s.getStaffId())) {
+                distinctResults.add(s);
+            }
+        }
+
+        return distinctResults.stream()
+                .map(this::convertToGenericStaffResponseDto)
+                .collect(Collectors.toList());
+    }
+
     private AdminResponseDto convertToAdminResponseDto(Admin admin) {
         AdminResponseDto dto = new AdminResponseDto();
         populateBaseResponseDto(dto, admin);

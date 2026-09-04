@@ -54,6 +54,8 @@ public class SpringSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/disputes/**").hasAnyRole("ADMIN", "CUSTOMER_SERVICE_AGENT")
                         .requestMatchers(HttpMethod.GET, "/api/fraud-alerts/**").hasAnyRole("ADMIN", "FRAUD_ANALYST")
                         .requestMatchers(HttpMethod.PUT, "/api/fraud-alerts/**").hasAnyRole("ADMIN", "FRAUD_ANALYST")
+                        .requestMatchers(HttpMethod.POST, "/api/kyc-documents/**").hasAnyRole("ADMIN", "BANK_OFFICER")
+                        .requestMatchers(HttpMethod.PUT, "/api/kyc-documents/**").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

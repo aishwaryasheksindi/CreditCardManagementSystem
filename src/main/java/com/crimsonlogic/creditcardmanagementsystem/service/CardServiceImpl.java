@@ -5,7 +5,9 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.CardType;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
+import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
+import com.crimsonlogic.creditcardmanagementsystem.exception.VerificationLockedException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
@@ -22,7 +24,6 @@ public class CardServiceImpl implements ICardService {
     public CardServiceImpl(CardRepository cardRepository,
                            CustomerRepository customerRepository,
                            CardTypeRepository cardTypeRepository) {
-
         this.cardRepository = cardRepository;
         this.customerRepository = customerRepository;
         this.cardTypeRepository = cardTypeRepository;
@@ -49,6 +50,12 @@ public class CardServiceImpl implements ICardService {
                                         + cardDto.getCustomerId()
                         )
                 );
+
+        if (customer.getKycStatus() != KycStatus.VERIFIED) {
+            throw new VerificationLockedException(
+                    "Customer KYC status is " + customer.getKycStatus() + ". Cards can only be issued to VERIFIED customers."
+            );
+        }
 
         CardType cardType = cardTypeRepository.findById(cardDto.getCardTypeId())
                 .orElseThrow(() ->

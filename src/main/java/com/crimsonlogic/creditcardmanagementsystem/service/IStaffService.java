@@ -33,4 +33,6 @@ public interface IStaffService {
     StaffResponseDto getStaffById(String staffId);
 
     List<StaffResponseDto> getAllStaff();
+
+    List<StaffResponseDto> searchStaff(String empName, String empPhone);
 }

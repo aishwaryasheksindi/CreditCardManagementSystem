@@ -70,4 +70,60 @@ public class IdGenerationUtil {
     public static String generateStaffId() {
         return "STF" + generateNumber(4);
     }
+
+    public static String generateAuditLogId() {
+        return "AUD" + generateNumber(6);
+    }
+
+    public static String generateKycDocumentId() {
+        return "KYC" + generateNumber(6);
+    }
+
+    public static String generateDisputeId() {
+        return "DSP" + generateNumber(6);
+    }
+
+    public static String generateNotificationId() {
+        return "NTF" + generateNumber(6);
+    }
+
+    public static String generateEmiPlanId() {
+        return "EMI" + generateNumber(6);
+    }
+
+    public static String generateRewardId() {
+        return "RWD" + generateNumber(6);
+    }
+
+    public static String generateRewardTransactionId() {
+        return "RWT" + generateNumber(6);
+    }
+
+    public static String generateRiskScoreId() {
+        return "RS" + generateNumber(6);
+    }
+
+    public static String generateFraudAlertId() {
+        return "FA" + generateNumber(6);
+    }
+
+    public static String generateInsightId() {
+        return "INS" + generateNumber(6);
+    }
+
+    public static String generateCreditRecommendationId() {
+        return "CR" + generateNumber(6);
+    }
+
+    public static String generateEmiRecommendationId() {
+        return "ER" + generateNumber(6);
+    }
+
+    public static String generateRewardRecommendationId() {
+        return "RR" + generateNumber(6);
+    }
+
+    public static String generateChatId() {
+        return "CHT" + generateNumber(6);
+    }
 }

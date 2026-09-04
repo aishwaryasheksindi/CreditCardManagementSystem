@@ -7,6 +7,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
 import com.crimsonlogic.creditcardmanagementsystem.entity.User;
+import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.UserRepository;
@@ -29,6 +30,14 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserResponseDto addUser(UserRequestDto userRequestDto) {
+
+        if (userRepository.findByUsername(userRequestDto.getUsername()).isPresent()) {
+            throw new DuplicateResourceException("Username already exists: " + userRequestDto.getUsername());
+        }
+
+        if (userRepository.findByEmail(userRequestDto.getEmail()).isPresent()) {
+            throw new DuplicateResourceException("Email already registered: " + userRequestDto.getEmail());
+        }
 
         User user = new User();
 
