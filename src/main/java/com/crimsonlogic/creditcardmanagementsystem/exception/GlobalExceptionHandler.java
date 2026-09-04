@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,6 +68,18 @@ public class GlobalExceptionHandler {
         errorDetails.put("path", request.getDescription(false).replace("uri=", ""));
 
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<Map<String, Object>> handleLockedException(LockedException ex, WebRequest request) {
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put("timestamp", LocalDateTime.now());
+        errorDetails.put("status", HttpStatus.LOCKED.value());
+        errorDetails.put("error", "Locked");
+        errorDetails.put("message", "Account temporarily locked due to multiple failed login attempts. Please try again later.");
+        errorDetails.put("path", request.getDescription(false).replace("uri=", ""));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.LOCKED);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

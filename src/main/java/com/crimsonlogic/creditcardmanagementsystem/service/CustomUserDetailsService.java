@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,9 +34,16 @@ public class CustomUserDetailsService implements UserDetailsService {
                 new SimpleGrantedAuthority("ROLE_" + roleName)
         );
 
+        boolean isLocked = user.getAccountLockedUntil() != null
+                && user.getAccountLockedUntil().isAfter(LocalDateTime.now());
+
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPasswordHash(),
+                true,
+                true,
+                true,
+                !isLocked,
                 authorities
         );
     }

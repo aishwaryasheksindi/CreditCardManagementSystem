@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,6 +42,9 @@ class CardServiceTest {
 
     @Mock
     private IAuditLogService auditLogService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private CardServiceImpl cardService;
@@ -152,6 +156,114 @@ class CardServiceTest {
                 eq("Card"),
                 eq(cardId),
                 contains("Card status changed from ACTIVE to BLOCKED")
+        );
+    }
+
+    @Test
+    void testSetPin_Success() {
+        String cardId = "CARD1001";
+        Card existingCard = new Card();
+        existingCard.setCardId(cardId);
+        existingCard.setFailedPinAttempts(2);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+        when(passwordEncoder.encode("1234")).thenReturn("encoded1234");
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        cardService.setPin(cardId, "1234");
+
+        assertEquals("encoded1234", existingCard.getPinHash());
+        assertNotNull(existingCard.getPinSetAt());
+        assertEquals(0, existingCard.getFailedPinAttempts());
+        verify(cardRepository, times(1)).save(existingCard);
+    }
+
+    @Test
+    void testVerifyPin_PinNotSet_ThrowsException() {
+        String cardId = "CARD1001";
+        Card existingCard = new Card();
+        existingCard.setCardId(cardId);
+        existingCard.setPinHash(null);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            cardService.verifyPin(cardId, "1234");
+        });
+
+        assertEquals("PIN not set for this card", ex.getMessage());
+    }
+
+    @Test
+    void testVerifyPin_Success_ResetsFailedAttempts() {
+        String cardId = "CARD1001";
+        Card existingCard = new Card();
+        existingCard.setCardId(cardId);
+        existingCard.setPinHash("encoded1234");
+        existingCard.setFailedPinAttempts(2);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+        when(passwordEncoder.matches("1234", "encoded1234")).thenReturn(true);
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        boolean result = cardService.verifyPin(cardId, "1234");
+
+        assertTrue(result);
+        assertEquals(0, existingCard.getFailedPinAttempts());
+        verify(cardRepository, times(1)).save(existingCard);
+    }
+
+    @Test
+    void testVerifyPin_WrongPinUnder3_ThrowsIncorrectPin() {
+        String cardId = "CARD1001";
+        Card existingCard = new Card();
+        existingCard.setCardId(cardId);
+        existingCard.setPinHash("encoded1234");
+        existingCard.setFailedPinAttempts(0);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+        when(passwordEncoder.matches("9999", "encoded1234")).thenReturn(false);
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            cardService.verifyPin(cardId, "9999");
+        });
+
+        assertEquals("Incorrect PIN", ex.getMessage());
+        assertEquals(1, existingCard.getFailedPinAttempts());
+        verify(cardRepository, times(1)).save(existingCard);
+    }
+
+    @Test
+    void testVerifyPin_WrongPinReaches3_BlocksCardAndLogsAudit() {
+        String cardId = "CARD1001";
+        Card existingCard = new Card();
+        existingCard.setCardId(cardId);
+        existingCard.setPinHash("encoded1234");
+        existingCard.setFailedPinAttempts(2);
+        existingCard.setCardStatus(CardStatus.ACTIVE);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        existingCard.setCustomer(customer);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(existingCard));
+        when(passwordEncoder.matches("9999", "encoded1234")).thenReturn(false);
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            cardService.verifyPin(cardId, "9999");
+        });
+
+        assertEquals("Card blocked due to repeated incorrect PIN attempts", ex.getMessage());
+        assertEquals(3, existingCard.getFailedPinAttempts());
+        assertEquals(CardStatus.BLOCKED, existingCard.getCardStatus());
+        verify(cardRepository, times(1)).save(existingCard);
+        verify(auditLogService, times(1)).logAction(
+                eq("CUST1001"),
+                eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE),
+                eq("Card"),
+                eq(cardId),
+                eq("Card auto-blocked after 3 failed PIN attempts")
         );
     }
 }

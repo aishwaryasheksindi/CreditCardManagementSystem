@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cards")
@@ -45,6 +46,12 @@ public class Card {
     private LocalDate expiryDate;
 
     private LocalDate issuanceDate;
+
+    private String pinHash;
+
+    private LocalDateTime pinSetAt;
+
+    private int failedPinAttempts = 0;
 
 
     // Default constructor
@@ -177,5 +184,29 @@ public class Card {
 
     public void setIssuanceDate(LocalDate issuanceDate) {
         this.issuanceDate = issuanceDate;
+    }
+
+    public String getPinHash() {
+        return pinHash;
+    }
+
+    public void setPinHash(String pinHash) {
+        this.pinHash = pinHash;
+    }
+
+    public LocalDateTime getPinSetAt() {
+        return pinSetAt;
+    }
+
+    public void setPinSetAt(LocalDateTime pinSetAt) {
+        this.pinSetAt = pinSetAt;
+    }
+
+    public int getFailedPinAttempts() {
+        return failedPinAttempts;
+    }
+
+    public void setFailedPinAttempts(int failedPinAttempts) {
+        this.failedPinAttempts = failedPinAttempts;
     }
 }

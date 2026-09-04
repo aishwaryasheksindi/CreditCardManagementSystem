@@ -43,6 +43,9 @@ public class SpringSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/customers/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/api/staff/**").hasRole("ADMIN")
+                        // TODO: Add endpoint-level card ownership check for customers when user context is available; at minimum require authentication.
+                        .requestMatchers(HttpMethod.POST, "/api/cards/*/set-pin").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/cards/*/verify-pin").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/cards/**").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .requestMatchers(HttpMethod.PUT, "/api/cards/**").hasAnyRole("ADMIN", "BANK_OFFICER")
                         .requestMatchers(HttpMethod.GET, "/api/customers/search").hasAnyRole("ADMIN", "BANK_OFFICER", "CUSTOMER_SERVICE_AGENT")

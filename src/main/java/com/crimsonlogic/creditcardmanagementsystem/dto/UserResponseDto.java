@@ -12,6 +12,7 @@ public class UserResponseDto {
     private String accountStatus;
     private LocalDateTime createdAt;
     private LocalDateTime lastLoginAt;
+    private LocalDateTime accountLockedUntil;
 
     public UserResponseDto() {
     }
@@ -98,5 +99,13 @@ public class UserResponseDto {
 
     public void setLastLoginAt(LocalDateTime lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
+    }
+
+    public LocalDateTime getAccountLockedUntil() {
+        return accountLockedUntil;
+    }
+
+    public void setAccountLockedUntil(LocalDateTime accountLockedUntil) {
+        this.accountLockedUntil = accountLockedUntil;
     }
 }

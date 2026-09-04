@@ -1,5 +1,6 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
+import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -88,6 +89,27 @@ public class UserServiceImpl implements IUserService {
         return convertToResponseDto(user);
     }
 
+    @Override
+    public void recordFailedLoginAttempt(String username) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            int attempts = user.getFailedLoginAttempts() + 1;
+            user.setFailedLoginAttempts(attempts);
+            if (attempts >= 3) {
+                user.setAccountLockedUntil(LocalDateTime.now().plusMinutes(15));
+            }
+            userRepository.save(user);
+        });
+    }
+
+    @Override
+    public void resetFailedLoginAttempts(String userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setFailedLoginAttempts(0);
+            user.setAccountLockedUntil(null);
+            userRepository.save(user);
+        });
+    }
+
     private UserResponseDto convertToResponseDto(User user) {
         UserResponseDto responseDto = new UserResponseDto();
         responseDto.setUserId(user.getUserId());
@@ -100,6 +122,7 @@ public class UserServiceImpl implements IUserService {
         responseDto.setAccountStatus(user.getAccountStatus());
         responseDto.setCreatedAt(user.getCreatedAt());
         responseDto.setLastLoginAt(user.getLastLoginAt());
+        responseDto.setAccountLockedUntil(user.getAccountLockedUntil());
         return responseDto;
     }
 }

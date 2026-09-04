@@ -10,4 +10,8 @@ public interface ICardService {
     CardResponseDto getCardById(String cardId);
 
     CardResponseDto updateCard(String cardId, CardRequestDto cardDto);
+
+    void setPin(String cardId, String pin);
+
+    boolean verifyPin(String cardId, String pin);
 }

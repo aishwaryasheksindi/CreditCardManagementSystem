@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.dto;
 
 import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionStatus;
+import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ public class TransactionResponseDto {
     private LocalDateTime transactionDate;
     private String transactionLocation;
     private TransactionStatus transactionStatus;
+    private TransactionType transactionType;
 
     public TransactionResponseDto() {
     }
@@ -110,5 +112,13 @@ public class TransactionResponseDto {
 
     public void setTransactionStatus(TransactionStatus transactionStatus) {
         this.transactionStatus = transactionStatus;
+    }
+
+    public TransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
     }
 }

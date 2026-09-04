@@ -6,6 +6,8 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
 import com.crimsonlogic.creditcardmanagementsystem.entity.TransactionCategory;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Merchant;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
+import com.crimsonlogic.creditcardmanagementsystem.enums.CardStatus;
+import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionType;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionCategoryRepository;
@@ -21,18 +23,21 @@ public class TransactionServiceImpl implements ITransactionService {
     private final CardRepository cardRepository;
     private final MerchantRepository merchantRepository;
     private final TransactionCategoryRepository categoryRepository;
+    private final ICardService cardService;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             CardRepository cardRepository,
             MerchantRepository merchantRepository,
-            TransactionCategoryRepository categoryRepository
+            TransactionCategoryRepository categoryRepository,
+            ICardService cardService
             ) {
 
         this.transactionRepository = transactionRepository;
         this.cardRepository = cardRepository;
         this.merchantRepository = merchantRepository;
         this.categoryRepository = categoryRepository;
+        this.cardService = cardService;
     }
 
     @Override
@@ -56,6 +61,17 @@ public class TransactionServiceImpl implements ITransactionService {
                         )
                 );
 
+        if (card.getCardStatus() != CardStatus.ACTIVE) {
+            throw new IllegalArgumentException(
+                    "Card is " + card.getCardStatus() + " — transactions are not allowed on this card");
+        }
+
+        if (transactionDto.getTransactionType() == TransactionType.CASH_WITHDRAWAL) {
+            if (transactionDto.getPin() == null || transactionDto.getPin().isBlank()) {
+                throw new IllegalArgumentException("PIN is required for this transaction type");
+            }
+            cardService.verifyPin(card.getCardId(), transactionDto.getPin());
+        }
 
         // Get Merchant
         Merchant merchant = merchantRepository
@@ -96,6 +112,9 @@ public class TransactionServiceImpl implements ITransactionService {
         );
         transaction.setTransactionStatus(
                 transactionDto.getTransactionStatus()
+        );
+        transaction.setTransactionType(
+                transactionDto.getTransactionType()
         );
 
 
@@ -170,6 +189,10 @@ public class TransactionServiceImpl implements ITransactionService {
 
         transactionDto.setTransactionStatus(
                 transaction.getTransactionStatus()
+        );
+
+        transactionDto.setTransactionType(
+                transaction.getTransactionType()
         );
 
         return transactionDto;

@@ -1,6 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.entity;
 
 import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionStatus;
+import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,6 +43,9 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     private TransactionStatus transactionStatus;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType;
 
 
     // Default constructor
@@ -144,5 +148,13 @@ public class Transaction {
 
     public void setTransactionStatus(TransactionStatus transactionStatus) {
         this.transactionStatus = transactionStatus;
+    }
+
+    public TransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
     }
 }

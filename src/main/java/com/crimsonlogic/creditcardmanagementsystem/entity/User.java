@@ -32,6 +32,10 @@ public class User {
 
     private LocalDateTime lastLoginAt;
 
+    private int failedLoginAttempts = 0;
+
+    private LocalDateTime accountLockedUntil;
+
     public User() {
     }
 
@@ -97,5 +101,21 @@ public class User {
 
     public void setLastLoginAt(LocalDateTime lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
+    }
+
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public LocalDateTime getAccountLockedUntil() {
+        return accountLockedUntil;
+    }
+
+    public void setAccountLockedUntil(LocalDateTime accountLockedUntil) {
+        this.accountLockedUntil = accountLockedUntil;
     }
 }

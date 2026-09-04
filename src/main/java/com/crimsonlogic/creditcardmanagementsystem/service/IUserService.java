@@ -10,4 +10,8 @@ public interface IUserService {
     UserResponseDto getUserById(String userId);
 
     UserResponseDto findByUsername(String username);
+ 
+    void recordFailedLoginAttempt(String username);
+
+    void resetFailedLoginAttempts(String userId);
 }

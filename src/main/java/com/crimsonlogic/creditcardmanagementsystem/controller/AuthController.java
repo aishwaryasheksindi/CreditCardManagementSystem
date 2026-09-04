@@ -46,8 +46,7 @@ public class AuthController {
                             request.getPassword()
                     )
             );
-
-            UserResponseDto user = userService.findByUsername(request.getUsername());
+            UserResponseDto user = userService.findByUsername(request.getUsername());
 
             String roleName = user.getRoleName() != null
                     ? user.getRoleName()
@@ -56,10 +55,13 @@ public class AuthController {
             String token = jwtService.generateToken(user.getUsername(), roleName);
             Date expiresAt = jwtService.extractExpiration(token);
 
+            userService.resetFailedLoginAttempts(user.getUserId());
+
             auditLogService.logAction(user.getUserId(), AuditAction.LOGIN, "User", user.getUserId(), "User logged in");
 
             return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), roleName, expiresAt));
         } catch (AuthenticationException ex) {
+            userService.recordFailedLoginAttempt(request.getUsername());
             auditLogService.logAction(null, AuditAction.LOGIN_FAILED, "User", null, "Failed login attempt for username: " + request.getUsername());
             throw ex;
         }

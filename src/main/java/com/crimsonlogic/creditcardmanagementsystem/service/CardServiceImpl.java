@@ -14,6 +14,8 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
+import java.time.LocalDateTime;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,15 +25,18 @@ public class CardServiceImpl implements ICardService {
     private final CustomerRepository customerRepository;
     private final CardTypeRepository cardTypeRepository;
     private final IAuditLogService auditLogService;
+    private final PasswordEncoder passwordEncoder;
 
     public CardServiceImpl(CardRepository cardRepository,
                            CustomerRepository customerRepository,
                            CardTypeRepository cardTypeRepository,
-                           IAuditLogService auditLogService) {
+                           IAuditLogService auditLogService,
+                           PasswordEncoder passwordEncoder) {
         this.cardRepository = cardRepository;
         this.customerRepository = customerRepository;
         this.cardTypeRepository = cardTypeRepository;
         this.auditLogService = auditLogService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -173,6 +178,53 @@ public class CardServiceImpl implements ICardService {
         }
 
         return convertToResponseDto(savedCard);
+    }
+
+    @Override
+    public void setPin(String cardId, String pin) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        card.setPinHash(passwordEncoder.encode(pin));
+        card.setPinSetAt(LocalDateTime.now());
+        card.setFailedPinAttempts(0);
+        cardRepository.save(card);
+    }
+
+    @Override
+    public boolean verifyPin(String cardId, String pin) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        if (card.getPinHash() == null) {
+            throw new IllegalArgumentException("PIN not set for this card");
+        }
+
+        if (passwordEncoder.matches(pin, card.getPinHash())) {
+            card.setFailedPinAttempts(0);
+            cardRepository.save(card);
+            return true;
+        } else {
+            int attempts = card.getFailedPinAttempts() + 1;
+            card.setFailedPinAttempts(attempts);
+            if (attempts >= 3) {
+                card.setCardStatus(CardStatus.BLOCKED);
+                cardRepository.save(card);
+                auditLogService.logAction(
+                        card.getCustomer() != null ? card.getCustomer().getCustomerId() : null,
+                        AuditAction.STATUS_CHANGE,
+                        "Card",
+                        cardId,
+                        "Card auto-blocked after 3 failed PIN attempts"
+                );
+                throw new IllegalArgumentException("Card blocked due to repeated incorrect PIN attempts");
+            } else {
+                cardRepository.save(card);
+                throw new IllegalArgumentException("Incorrect PIN");
+            }
+        }
     }
 
     private CardResponseDto convertToResponseDto(Card card) {
