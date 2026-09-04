@@ -1,8 +1,10 @@
 package com.crimsonlogic.creditcardmanagementsystem.enums;
 
 public enum CardStatus {
-	ACTIVE,
+    ACTIVE,
     BLOCKED,
     EXPIRED,
-    CLOSED
+    CLOSED,
+    LOST,
+    STOLEN
 }
