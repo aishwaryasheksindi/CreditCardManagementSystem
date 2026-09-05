@@ -65,6 +65,8 @@ public class CardServiceImpl implements ICardService {
             cardId = IdGenerationUtil.generateCardId();
         } while (cardRepository.existsById(cardId));
 
+        String cardReference = "TOK-" + cardId;
+
         Customer customer = customerRepository.findById(cardDto.getCustomerId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -90,7 +92,7 @@ public class CardServiceImpl implements ICardService {
         Card card = new Card();
 
         card.setCardId(cardId);
-        card.setCardReference(cardDto.getCardReference());
+        card.setCardReference(cardReference);
         card.setCustomer(customer);
         card.setCardType(cardType);
         card.setCardStatus(cardDto.getCardStatus());
@@ -144,9 +146,6 @@ public class CardServiceImpl implements ICardService {
         CardStatus oldStatus = card.getCardStatus();
         BigDecimal oldCreditLimit = card.getCreditLimit();
 
-        if (cardDto.getCardReference() != null) {
-            card.setCardReference(cardDto.getCardReference());
-        }
         if (cardDto.getCustomerId() != null) {
             Customer customer = customerRepository.findById(cardDto.getCustomerId())
                     .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + cardDto.getCustomerId()));

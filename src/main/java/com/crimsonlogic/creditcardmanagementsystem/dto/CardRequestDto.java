@@ -7,16 +7,11 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class CardRequestDto {
-
-    @NotBlank(message = "Card reference is required")
-    @Size(max = 100, message = "Card reference must not exceed 100 characters")
-    private String cardReference;
 
     @NotBlank(message = "Customer ID is required")
     private String customerId;
@@ -29,7 +24,7 @@ public class CardRequestDto {
 
     @NotNull(message = "Credit limit is required")
     @DecimalMin(value = "10000.0", message = "Credit limit must be at least ₹10,000")
-    @DecimalMax(value = "2000000.0", message = "Credit limit cannot exceed ₹20,00,000")
+    @DecimalMax(value = "2000000.0", message = "Credit limit cannot exceed ₹20,000,00")
     private BigDecimal creditLimit;
 
     @NotNull(message = "Available limit is required")
@@ -61,8 +56,7 @@ public class CardRequestDto {
     public CardRequestDto() {
     }
 
-    public CardRequestDto(String cardReference,
-                          String customerId,
+    public CardRequestDto(String customerId,
                           String cardTypeId,
                           CardStatus cardStatus,
                           BigDecimal creditLimit,
@@ -72,7 +66,6 @@ public class CardRequestDto {
                           BigDecimal annualFee,
                           LocalDate expiryDate,
                           LocalDate issuanceDate) {
-        this.cardReference = cardReference;
         this.customerId = customerId;
         this.cardTypeId = cardTypeId;
         this.cardStatus = cardStatus;
@@ -83,14 +76,6 @@ public class CardRequestDto {
         this.annualFee = annualFee;
         this.expiryDate = expiryDate;
         this.issuanceDate = issuanceDate;
-    }
-
-    public String getCardReference() {
-        return cardReference;
-    }
-
-    public void setCardReference(String cardReference) {
-        this.cardReference = cardReference;
     }
 
     public String getCustomerId() {

@@ -81,7 +81,6 @@ class CardServiceTest {
         cardDto.setCreditLimit(new BigDecimal("50000.00"));
         cardDto.setAvailableLimit(new BigDecimal("50000.00"));
         cardDto.setCardStatus(CardStatus.ACTIVE);
-        cardDto.setCardReference("CARD-REF-123");
         cardDto.setBillingCycle(1);
         cardDto.setInterestRate(new BigDecimal("15.0"));
         cardDto.setAnnualFee(BigDecimal.ZERO);
@@ -105,6 +104,8 @@ class CardServiceTest {
         assertNotNull(result);
         assertEquals(new BigDecimal("50000.00"), result.getCreditLimit());
         assertEquals(new BigDecimal("50000.00"), result.getAvailableLimit());
+        assertNotNull(result.getCardReference());
+        assertTrue(result.getCardReference().startsWith("TOK-"));
     }
 
     @Test
