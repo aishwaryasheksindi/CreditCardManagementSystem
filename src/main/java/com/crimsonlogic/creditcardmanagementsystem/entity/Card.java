@@ -37,7 +37,7 @@ public class Card {
 
     private BigDecimal availableLimit;
 
-    private String billingCycle;
+    private Integer billingCycle;
 
     private BigDecimal interestRate;
 
@@ -67,7 +67,7 @@ public class Card {
                 CardStatus cardStatus,
                 BigDecimal creditLimit,
                 BigDecimal availableLimit,
-                String billingCycle,
+                Integer billingCycle,
                 BigDecimal interestRate,
                 BigDecimal annualFee,
                 LocalDate expiryDate,
@@ -146,11 +146,11 @@ public class Card {
         this.availableLimit = availableLimit;
     }
 
-    public String getBillingCycle() {
+    public Integer getBillingCycle() {
         return billingCycle;
     }
 
-    public void setBillingCycle(String billingCycle) {
+    public void setBillingCycle(Integer billingCycle) {
         this.billingCycle = billingCycle;
     }
 

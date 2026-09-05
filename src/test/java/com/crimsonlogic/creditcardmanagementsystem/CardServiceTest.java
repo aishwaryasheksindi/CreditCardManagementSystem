@@ -82,7 +82,7 @@ class CardServiceTest {
         cardDto.setAvailableLimit(new BigDecimal("50000.00"));
         cardDto.setCardStatus(CardStatus.ACTIVE);
         cardDto.setCardReference("CARD-REF-123");
-        cardDto.setBillingCycle("1st of month");
+        cardDto.setBillingCycle(1);
         cardDto.setInterestRate(new BigDecimal("15.0"));
         cardDto.setAnnualFee(BigDecimal.ZERO);
         cardDto.setExpiryDate(LocalDate.now().plusYears(3));
@@ -357,7 +357,7 @@ class CardServiceTest {
         oldCard.setCardStatus(CardStatus.LOST);
         oldCard.setCreditLimit(new BigDecimal("100000.00"));
         oldCard.setAvailableLimit(new BigDecimal("25000.00"));
-        oldCard.setBillingCycle("15th");
+        oldCard.setBillingCycle(15);
         oldCard.setInterestRate(new BigDecimal("14.0"));
         oldCard.setAnnualFee(new BigDecimal("500.00"));
         Customer customer = new Customer();

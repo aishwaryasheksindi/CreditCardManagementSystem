@@ -3,6 +3,8 @@ package com.crimsonlogic.creditcardmanagementsystem.dto;
 import com.crimsonlogic.creditcardmanagementsystem.enums.CardStatus;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -35,9 +37,10 @@ public class CardRequestDto {
             message = "Available limit cannot be negative")
     private BigDecimal availableLimit;
 
-    @NotBlank(message = "Billing cycle is required")
-    @Size(max = 50, message = "Billing cycle must not exceed 50 characters")
-    private String billingCycle;
+    @NotNull(message = "Billing cycle is required")
+    @Min(value = 1, message = "Billing cycle day must be between 1 and 28")
+    @Max(value = 28, message = "Billing cycle day must be between 1 and 28")
+    private Integer billingCycle;
 
     @NotNull(message = "Interest rate is required")
     @DecimalMin(value = "1.0", message = "Interest rate must be at least 1%")
@@ -64,7 +67,7 @@ public class CardRequestDto {
                           CardStatus cardStatus,
                           BigDecimal creditLimit,
                           BigDecimal availableLimit,
-                          String billingCycle,
+                          Integer billingCycle,
                           BigDecimal interestRate,
                           BigDecimal annualFee,
                           LocalDate expiryDate,
@@ -130,11 +133,11 @@ public class CardRequestDto {
         this.availableLimit = availableLimit;
     }
 
-    public String getBillingCycle() {
+    public Integer getBillingCycle() {
         return billingCycle;
     }
 
-    public void setBillingCycle(String billingCycle) {
+    public void setBillingCycle(Integer billingCycle) {
         this.billingCycle = billingCycle;
     }
 

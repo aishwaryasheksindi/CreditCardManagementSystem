@@ -28,7 +28,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,13 +72,14 @@ class StatementServiceTest {
         requestDto.setDueDate(dueDate);
         requestDto.setOpeningBalance(new BigDecimal("1000.00"));
 
-        when(cardRepository.existsById(cardId)).thenReturn(true);
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(15);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId)).thenReturn(Optional.empty());
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Card card = new Card();
-        card.setCardId(cardId);
 
         Transaction purchase = new Transaction();
         purchase.setCard(card);
@@ -154,19 +154,20 @@ class StatementServiceTest {
         requestDto.setStatementDate(statementDate);
         requestDto.setDueDate(dueDate);
 
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(15);
+
         Statement priorStatement = new Statement();
         priorStatement.setStatementId("STMT1001");
         priorStatement.setCardId(cardId);
         priorStatement.setStatementDate(LocalDate.of(2026, 8, 15));
         priorStatement.setClosingBalance(new BigDecimal("5500.00"));
 
-        when(cardRepository.existsById(cardId)).thenReturn(true);
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId)).thenReturn(Optional.of(priorStatement));
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Card card = new Card();
-        card.setCardId(cardId);
 
         Transaction purchase = new Transaction();
         purchase.setCard(card);
@@ -205,7 +206,11 @@ class StatementServiceTest {
         requestDto.setStatementDate(LocalDate.now());
         requestDto.setDueDate(LocalDate.now().plusDays(20));
 
-        when(cardRepository.existsById(cardId)).thenReturn(true);
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(1);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId)).thenReturn(Optional.empty());
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -230,7 +235,11 @@ class StatementServiceTest {
         requestDto.setDueDate(LocalDate.now().plusDays(20));
         requestDto.setOpeningBalance(new BigDecimal("500.00"));
 
-        when(cardRepository.existsById(cardId)).thenReturn(true);
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(1);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId)).thenReturn(Optional.empty());
         when(statementRepository.existsById(any())).thenReturn(false);
         when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -259,9 +268,65 @@ class StatementServiceTest {
         requestDto.setStatementDate(LocalDate.now());
         requestDto.setDueDate(LocalDate.now().plusDays(20));
 
-        when(cardRepository.existsById("CARD_NON_EXISTENT")).thenReturn(false);
+        when(cardRepository.findById("CARD_NON_EXISTENT")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> statementService.addStatement(requestDto));
         verify(statementRepository, never()).save(any());
+    }
+
+    @Test
+    void testAddStatement_OmittedDates_DerivesFromBillingCycle() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(10);
+
+        StatementRequestDto requestDto = new StatementRequestDto();
+        requestDto.setCardId(cardId); // statementDate and dueDate omitted!
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId)).thenReturn(Optional.empty());
+        when(statementRepository.existsById(any())).thenReturn(false);
+        when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.findByCard_CardIdAndTransactionDateBetween(eq(cardId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+        when(paymentRepository.findByCardIdAndPaymentDateBetweenAndPaymentStatus(eq(cardId), any(LocalDateTime.class), any(LocalDateTime.class), eq(PaymentStatus.SUCCESS)))
+                .thenReturn(Collections.emptyList());
+
+        StatementResponseDto result = statementService.addStatement(requestDto);
+
+        assertNotNull(result);
+        assertNotNull(result.getStatementDate());
+        assertNotNull(result.getDueDate());
+        assertEquals(10, result.getStatementDate().getDayOfMonth());
+        assertEquals(result.getStatementDate().plusDays(20), result.getDueDate());
+    }
+
+    @Test
+    void testAddStatement_NullBillingCycle_DefaultsToDay1WithoutNpe() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(null); // null billing cycle
+
+        StatementRequestDto requestDto = new StatementRequestDto();
+        requestDto.setCardId(cardId); // statementDate and dueDate omitted!
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId)).thenReturn(Optional.empty());
+        when(statementRepository.existsById(any())).thenReturn(false);
+        when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.findByCard_CardIdAndTransactionDateBetween(eq(cardId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+        when(paymentRepository.findByCardIdAndPaymentDateBetweenAndPaymentStatus(eq(cardId), any(LocalDateTime.class), any(LocalDateTime.class), eq(PaymentStatus.SUCCESS)))
+                .thenReturn(Collections.emptyList());
+
+        StatementResponseDto result = statementService.addStatement(requestDto);
+
+        assertNotNull(result);
+        assertNotNull(result.getStatementDate());
+        assertNotNull(result.getDueDate());
+        assertEquals(1, result.getStatementDate().getDayOfMonth()); // defaults to day 1
+        assertEquals(result.getStatementDate().plusDays(20), result.getDueDate());
     }
 }

@@ -14,7 +14,7 @@ public class CardResponseDto {
     private CardStatus cardStatus;
     private BigDecimal creditLimit;
     private BigDecimal availableLimit;
-    private String billingCycle;
+    private Integer billingCycle;
     private BigDecimal interestRate;
     private BigDecimal annualFee;
     private LocalDate expiryDate;
@@ -30,7 +30,7 @@ public class CardResponseDto {
                            CardStatus cardStatus,
                            BigDecimal creditLimit,
                            BigDecimal availableLimit,
-                           String billingCycle,
+                           Integer billingCycle,
                            BigDecimal interestRate,
                            BigDecimal annualFee,
                            LocalDate expiryDate,
@@ -105,11 +105,11 @@ public class CardResponseDto {
         this.availableLimit = availableLimit;
     }
 
-    public String getBillingCycle() {
+    public Integer getBillingCycle() {
         return billingCycle;
     }
 
-    public void setBillingCycle(String billingCycle) {
+    public void setBillingCycle(Integer billingCycle) {
         this.billingCycle = billingCycle;
     }
 
