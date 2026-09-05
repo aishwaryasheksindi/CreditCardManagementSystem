@@ -18,7 +18,7 @@ public interface ICardService {
 
     CardResponseDto blockCard(String cardId, CardBlockRequestDto requestDto);
 
-    CardResponseDto unblockCard(String cardId);
+    CardResponseDto unblockCard(String cardId, String reason);
 
-    CardResponseDto replaceCard(String cardId);
+    CardResponseDto replaceCard(String cardId, String reason);
 }

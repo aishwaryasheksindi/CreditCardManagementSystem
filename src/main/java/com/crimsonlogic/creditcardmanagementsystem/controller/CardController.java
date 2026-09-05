@@ -1,5 +1,6 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardActionReasonDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.SetPinRequest;
@@ -85,17 +86,19 @@ public class CardController {
 
     @PostMapping("/{cardId}/unblock")
     public ResponseEntity<CardResponseDto> unblockCard(
-            @PathVariable String cardId) {
+            @PathVariable String cardId,
+            @Valid @RequestBody CardActionReasonDto requestDto) {
 
-        CardResponseDto unblockedCard = cardService.unblockCard(cardId);
+        CardResponseDto unblockedCard = cardService.unblockCard(cardId, requestDto.getReason());
         return ResponseEntity.ok(unblockedCard);
     }
 
     @PostMapping("/{cardId}/replace")
     public ResponseEntity<CardResponseDto> replaceCard(
-            @PathVariable String cardId) {
+            @PathVariable String cardId,
+            @Valid @RequestBody CardActionReasonDto requestDto) {
 
-        CardResponseDto replacedCard = cardService.replaceCard(cardId);
+        CardResponseDto replacedCard = cardService.replaceCard(cardId, requestDto.getReason());
         return new ResponseEntity<>(replacedCard, HttpStatus.CREATED);
     }
 }

@@ -158,6 +158,10 @@ public class EmiPlanServiceImpl implements IEmiPlanService {
         BigDecimal currentLateFee = emiPlan.getLateFeeAmount() != null ? emiPlan.getLateFeeAmount() : BigDecimal.ZERO;
         emiPlan.setLateFeeAmount(currentLateFee.add(lateFee));
 
+        BigDecimal currentOutstanding = emiPlan.getOutstandingAmount() != null
+                ? emiPlan.getOutstandingAmount() : BigDecimal.ZERO;
+        emiPlan.setOutstandingAmount(currentOutstanding.add(lateFee));
+
         int missed = (emiPlan.getMissedInstallments() != null ? emiPlan.getMissedInstallments() : 0) + 1;
         emiPlan.setMissedInstallments(missed);
 

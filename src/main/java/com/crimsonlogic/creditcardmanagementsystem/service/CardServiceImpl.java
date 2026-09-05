@@ -289,13 +289,16 @@ public class CardServiceImpl implements ICardService {
         card.setCardStatus(targetStatus);
         Card savedCard = cardRepository.save(card);
 
-        String changedBy = card.getCustomer() != null ? card.getCustomer().getCustomerId() : "SYSTEM";
+        String actingUserId = currentUserContext.getCurrentUserId();
+        if (actingUserId == null) {
+            actingUserId = card.getCustomer() != null ? card.getCustomer().getCustomerId() : "SYSTEM";
+        }
         cardStatusHistoryService.addCardStatusHistory(
-                new CardStatusHistoryRequestDto(cardId, targetStatus, LocalDateTime.now(), changedBy)
+                new CardStatusHistoryRequestDto(cardId, targetStatus, LocalDateTime.now(), actingUserId)
         );
 
         auditLogService.logAction(
-                changedBy,
+                actingUserId,
                 AuditAction.STATUS_CHANGE,
                 "Card",
                 cardId,
@@ -307,9 +310,13 @@ public class CardServiceImpl implements ICardService {
 
     @Override
     @Transactional
-    public CardResponseDto unblockCard(String cardId) {
+    public CardResponseDto unblockCard(String cardId, String reason) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        if (card.getCustomer() != null) {
+            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        }
 
         if (card.getCardStatus() != CardStatus.BLOCKED) {
             throw new IllegalArgumentException("Only a card with status BLOCKED can be unblocked");
@@ -319,17 +326,20 @@ public class CardServiceImpl implements ICardService {
         card.setFailedPinAttempts(0);
         Card savedCard = cardRepository.save(card);
 
-        String changedBy = card.getCustomer() != null ? card.getCustomer().getCustomerId() : "SYSTEM";
+        String actingUserId = currentUserContext.getCurrentUserId();
+        if (actingUserId == null) {
+            actingUserId = card.getCustomer() != null ? card.getCustomer().getCustomerId() : "SYSTEM";
+        }
         cardStatusHistoryService.addCardStatusHistory(
-                new CardStatusHistoryRequestDto(cardId, CardStatus.ACTIVE, LocalDateTime.now(), changedBy)
+                new CardStatusHistoryRequestDto(cardId, CardStatus.ACTIVE, LocalDateTime.now(), actingUserId)
         );
 
         auditLogService.logAction(
-                changedBy,
+                actingUserId,
                 AuditAction.STATUS_CHANGE,
                 "Card",
                 cardId,
-                "Card unblocked and status reset to ACTIVE"
+                "Card unblocked and status reset to ACTIVE: " + reason
         );
 
         return convertToResponseDto(savedCard);
@@ -337,9 +347,13 @@ public class CardServiceImpl implements ICardService {
 
     @Override
     @Transactional
-    public CardResponseDto replaceCard(String cardId) {
+    public CardResponseDto replaceCard(String cardId, String reason) {
         Card oldCard = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        if (oldCard.getCustomer() != null) {
+            currentUserContext.assertCustomerOwnership(oldCard.getCustomer().getCustomerId());
+        }
 
         if (oldCard.getCardStatus() != CardStatus.LOST && oldCard.getCardStatus() != CardStatus.STOLEN) {
             throw new IllegalArgumentException("Only cards with status LOST or STOLEN can be replaced");
@@ -349,16 +363,19 @@ public class CardServiceImpl implements ICardService {
         oldCard.setCardStatus(CardStatus.CLOSED);
         cardRepository.save(oldCard);
 
-        String customerId = oldCard.getCustomer() != null ? oldCard.getCustomer().getCustomerId() : "SYSTEM";
+        String actingUserId = currentUserContext.getCurrentUserId();
+        if (actingUserId == null) {
+            actingUserId = oldCard.getCustomer() != null ? oldCard.getCustomer().getCustomerId() : "SYSTEM";
+        }
         cardStatusHistoryService.addCardStatusHistory(
-                new CardStatusHistoryRequestDto(cardId, CardStatus.CLOSED, LocalDateTime.now(), customerId)
+                new CardStatusHistoryRequestDto(cardId, CardStatus.CLOSED, LocalDateTime.now(), actingUserId)
         );
         auditLogService.logAction(
-                customerId,
+                actingUserId,
                 AuditAction.STATUS_CHANGE,
                 "Card",
                 cardId,
-                "Old card closed due to replacement"
+                "Old card closed due to replacement: " + reason
         );
 
         // Issue new replacement card
@@ -386,14 +403,14 @@ public class CardServiceImpl implements ICardService {
         Card savedCard = cardRepository.save(newCard);
 
         cardStatusHistoryService.addCardStatusHistory(
-                new CardStatusHistoryRequestDto(newCardId, CardStatus.ACTIVE, LocalDateTime.now(), customerId)
+                new CardStatusHistoryRequestDto(newCardId, CardStatus.ACTIVE, LocalDateTime.now(), actingUserId)
         );
         auditLogService.logAction(
-                customerId,
+                actingUserId,
                 AuditAction.CREATE,
                 "Card",
                 newCardId,
-                "Replacement card issued for old card " + cardId
+                "Replacement card issued for old card " + cardId + ": " + reason
         );
 
         return convertToResponseDto(savedCard);

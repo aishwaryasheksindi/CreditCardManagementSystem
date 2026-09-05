@@ -135,6 +135,7 @@ class EmiPlanServiceTest {
         emiPlan.setEmiAmount(new BigDecimal("2000.00")); // 2% of 2000 is 40 -> minimum 100 applied
         emiPlan.setNextDueDate(overdueDate);
         emiPlan.setLateFeeAmount(BigDecimal.ZERO);
+        emiPlan.setOutstandingAmount(new BigDecimal("12000.00"));
         emiPlan.setMissedInstallments(0);
 
         when(emiPlanRepository.findById(emiPlanId)).thenReturn(Optional.of(emiPlan));
@@ -144,6 +145,7 @@ class EmiPlanServiceTest {
 
         assertNotNull(response);
         assertEquals(new BigDecimal("100.00"), response.getLateFeeAmount());
+        assertEquals(new BigDecimal("12100.00"), response.getOutstandingAmount());
         assertEquals(1, response.getMissedInstallments());
         assertEquals(overdueDate.plusMonths(1), response.getNextDueDate());
         verify(emiPlanRepository).save(emiPlan);
@@ -160,6 +162,7 @@ class EmiPlanServiceTest {
         emiPlan.setEmiAmount(new BigDecimal("10000.00")); // 2% of 10000 is 200 (> 100)
         emiPlan.setNextDueDate(overdueDate);
         emiPlan.setLateFeeAmount(new BigDecimal("50.00")); // prior late fee
+        emiPlan.setOutstandingAmount(new BigDecimal("20000.00"));
         emiPlan.setMissedInstallments(1);
 
         when(emiPlanRepository.findById(emiPlanId)).thenReturn(Optional.of(emiPlan));
@@ -169,6 +172,7 @@ class EmiPlanServiceTest {
 
         assertNotNull(response);
         assertEquals(new BigDecimal("250.00"), response.getLateFeeAmount()); // 50 + 200
+        assertEquals(new BigDecimal("20200.00"), response.getOutstandingAmount());
         assertEquals(2, response.getMissedInstallments());
         assertEquals(overdueDate.plusMonths(1), response.getNextDueDate());
     }

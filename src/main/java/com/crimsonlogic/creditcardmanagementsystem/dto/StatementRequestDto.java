@@ -19,28 +19,19 @@ public class StatementRequestDto {
     @NotNull(message = "Due date is required")
     private LocalDate dueDate;
 
-    @NotNull(message = "Opening balance is required")
+    private LocalDate cycleStartDate;
+
     @DecimalMin(value = "0.0", inclusive = true, message = "Opening balance cannot be negative")
     private BigDecimal openingBalance;
 
-    @NotNull(message = "Total purchases is required")
-    @PositiveOrZero(message = "Total purchases cannot be negative")
     private BigDecimal totalPurchases;
 
-    @NotNull(message = "Total payments is required")
-    @PositiveOrZero(message = "Total payments cannot be negative")
     private BigDecimal totalPayments;
 
-    @NotNull(message = "Total refunds is required")
-    @PositiveOrZero(message = "Total refunds cannot be negative")
     private BigDecimal totalRefunds;
 
-    @NotNull(message = "Total fees is required")
-    @PositiveOrZero(message = "Total fees cannot be negative")
     private BigDecimal totalFees;
 
-    @NotNull(message = "Total interest is required")
-    @PositiveOrZero(message = "Total interest cannot be negative")
     private BigDecimal totalInterest;
 
     private BigDecimal closingBalance;
@@ -48,6 +39,12 @@ public class StatementRequestDto {
     private BigDecimal minimumDue;
 
     public StatementRequestDto() {
+    }
+
+    public StatementRequestDto(String cardId, LocalDate statementDate, LocalDate dueDate) {
+        this.cardId = cardId;
+        this.statementDate = statementDate;
+        this.dueDate = dueDate;
     }
 
     public StatementRequestDto(String cardId,
@@ -160,5 +157,13 @@ public class StatementRequestDto {
 
     public void setMinimumDue(BigDecimal minimumDue) {
         this.minimumDue = minimumDue;
+    }
+
+    public LocalDate getCycleStartDate() {
+        return cycleStartDate;
+    }
+
+    public void setCycleStartDate(LocalDate cycleStartDate) {
+        this.cycleStartDate = cycleStartDate;
     }
 }

@@ -328,13 +328,13 @@ class CardServiceTest {
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        CardResponseDto response = cardService.unblockCard(cardId);
+        CardResponseDto response = cardService.unblockCard(cardId, "Customer verified identity");
 
         assertNotNull(response);
         assertEquals(CardStatus.ACTIVE, response.getCardStatus());
         assertEquals(0, card.getFailedPinAttempts());
         verify(cardStatusHistoryService, times(1)).addCardStatusHistory(any());
-        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(cardId), contains("unblocked"));
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(cardId), contains("Customer verified identity"));
     }
 
     @Test
@@ -346,7 +346,7 @@ class CardServiceTest {
 
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
 
-        assertThrows(IllegalArgumentException.class, () -> cardService.unblockCard(cardId));
+        assertThrows(IllegalArgumentException.class, () -> cardService.unblockCard(cardId, "Customer requested"));
     }
 
     @Test
@@ -371,7 +371,7 @@ class CardServiceTest {
         when(cardRepository.existsById(any())).thenReturn(false);
         when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        CardResponseDto replacement = cardService.replaceCard(oldCardId);
+        CardResponseDto replacement = cardService.replaceCard(oldCardId, "Lost card replacement requested");
 
         assertNotNull(replacement);
         assertEquals(CardStatus.CLOSED, oldCard.getCardStatus());
@@ -381,8 +381,8 @@ class CardServiceTest {
         assertNotNull(replacement.getExpiryDate());
 
         verify(cardStatusHistoryService, times(2)).addCardStatusHistory(any());
-        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(oldCardId), contains("closed"));
-        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.CREATE), eq("Card"), anyString(), contains("Replacement"));
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE), eq("Card"), eq(oldCardId), contains("Lost card replacement requested"));
+        verify(auditLogService, times(1)).logAction(eq("CUST1001"), eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.CREATE), eq("Card"), anyString(), contains("Lost card replacement requested"));
     }
 
     @Test
@@ -394,7 +394,7 @@ class CardServiceTest {
 
         when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
 
-        assertThrows(IllegalArgumentException.class, () -> cardService.replaceCard(cardId));
+        assertThrows(IllegalArgumentException.class, () -> cardService.replaceCard(cardId, "Some reason"));
     }
 
     @Test
@@ -411,5 +411,32 @@ class CardServiceTest {
                 .when(currentUserContext).assertCustomerOwnership("CUST_OTHER");
 
         assertThrows(AccessDeniedException.class, () -> cardService.getCardById(cardId));
+    }
+
+    @Test
+    void testUnblockCard_ActingUserAttribution_UsesCurrentUserId() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setCardStatus(CardStatus.BLOCKED);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        card.setCustomer(customer);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(currentUserContext.getCurrentUserId()).thenReturn("ADMIN_USER_42");
+
+        CardResponseDto response = cardService.unblockCard(cardId, "Support agent verified customer");
+
+        assertNotNull(response);
+        assertEquals(CardStatus.ACTIVE, response.getCardStatus());
+        verify(auditLogService, times(1)).logAction(
+                eq("ADMIN_USER_42"),
+                eq(com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction.STATUS_CHANGE),
+                eq("Card"),
+                eq(cardId),
+                contains("Support agent verified customer")
+        );
     }
 }
