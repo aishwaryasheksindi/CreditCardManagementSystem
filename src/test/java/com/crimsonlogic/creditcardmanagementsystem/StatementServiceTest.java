@@ -9,6 +9,7 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
 import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionStatus;
 import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionType;
+import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.PaymentRepository;
@@ -328,5 +329,93 @@ class StatementServiceTest {
         assertNotNull(result.getDueDate());
         assertEquals(1, result.getStatementDate().getDayOfMonth()); // defaults to day 1
         assertEquals(result.getStatementDate().plusDays(20), result.getDueDate());
+    }
+
+    @Test
+    void testAddStatement_PriorStatementExists_AdvancesToNextCycle() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(10);
+
+        Statement priorStatement = new Statement();
+        priorStatement.setStatementId("STMT1001");
+        priorStatement.setCardId(cardId);
+        priorStatement.setStatementDate(LocalDate.of(2026, 1, 10));
+        priorStatement.setClosingBalance(new BigDecimal("5000.00"));
+
+        StatementRequestDto requestDto = new StatementRequestDto();
+        requestDto.setCardId(cardId); // no dates supplied
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId))
+                .thenReturn(Optional.of(priorStatement));
+        when(statementRepository.existsById(any())).thenReturn(false);
+        when(statementRepository.existsByCardIdAndStatementDate(cardId, LocalDate.of(2026, 2, 10)))
+                .thenReturn(false);
+        when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.findByCard_CardIdAndTransactionDateBetween(eq(cardId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+        when(paymentRepository.findByCardIdAndPaymentDateBetweenAndPaymentStatus(eq(cardId), any(LocalDateTime.class), any(LocalDateTime.class), eq(PaymentStatus.SUCCESS)))
+                .thenReturn(Collections.emptyList());
+
+        StatementResponseDto result = statementService.addStatement(requestDto);
+
+        assertNotNull(result);
+        assertEquals(LocalDate.of(2026, 2, 10), result.getStatementDate());
+        assertEquals(LocalDate.of(2026, 2, 10).plusDays(20), result.getDueDate());
+    }
+
+    @Test
+    void testAddStatement_NextCycleNotClosedYet_ThrowsIllegalStateException() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(10);
+
+        // Prior statement whose next cycle end is still in the future relative to today
+        Statement priorStatement = new Statement();
+        priorStatement.setStatementId("STMT1001");
+        priorStatement.setCardId(cardId);
+        // Statement date is within the last few days, so next cycle end is in the next month
+        priorStatement.setStatementDate(LocalDate.now().minusDays(2));
+
+        StatementRequestDto requestDto = new StatementRequestDto();
+        requestDto.setCardId(cardId); // no dates supplied
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(statementRepository.findTopByCardIdOrderByStatementDateDesc(cardId))
+                .thenReturn(Optional.of(priorStatement));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+            statementService.addStatement(requestDto);
+        });
+
+        assertTrue(ex.getMessage().contains("the next billing cycle has not closed yet"));
+        verify(statementRepository, never()).save(any());
+    }
+
+    @Test
+    void testAddStatement_DuplicateStatementDate_ThrowsDuplicateResourceException() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        card.setBillingCycle(10);
+
+        LocalDate existingDate = LocalDate.of(2026, 8, 10);
+        StatementRequestDto requestDto = new StatementRequestDto();
+        requestDto.setCardId(cardId);
+        requestDto.setStatementDate(existingDate);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(statementRepository.existsById(any())).thenReturn(false);
+        when(statementRepository.existsByCardIdAndStatementDate(cardId, existingDate)).thenReturn(true);
+
+        DuplicateResourceException ex = assertThrows(DuplicateResourceException.class, () -> {
+            statementService.addStatement(requestDto);
+        });
+
+        assertTrue(ex.getMessage().contains("already exists"));
+        verify(statementRepository, never()).save(any());
     }
 }

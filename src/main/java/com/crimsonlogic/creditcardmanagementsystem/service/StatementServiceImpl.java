@@ -8,6 +8,7 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.Statement;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
 import com.crimsonlogic.creditcardmanagementsystem.enums.TransactionStatus;
+import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CardRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.PaymentRepository;
@@ -66,6 +67,17 @@ public class StatementServiceImpl implements IStatementService {
         return new LocalDate[] { cycleStart, cycleEnd };
     }
 
+    /**
+     * Given the end date of the previously generated cycle and the card's
+     * billing-cycle day, returns the end date of the NEXT cycle in sequence
+     * (previousCycleEnd's month + 1, on the configured billing day).
+     */
+    private LocalDate advanceToNextCycleEnd(LocalDate previousCycleEnd, Integer billingCycleDay) {
+        int day = (billingCycleDay != null) ? billingCycleDay : 1;
+        LocalDate nextMonth = previousCycleEnd.plusMonths(1);
+        return nextMonth.withDayOfMonth(Math.min(day, nextMonth.lengthOfMonth()));
+    }
+
     @Override
     public StatementResponseDto addStatement(StatementRequestDto statementDto) {
 
@@ -95,20 +107,32 @@ public class StatementServiceImpl implements IStatementService {
         LocalDate effectiveDueDate = statementDto.getDueDate();
         LocalDate derivedCycleStart = null;
 
-        // Only derive from the billing cycle when there are no explicit dates
-        // AND no prior statement to anchor to (i.e. this card's very first
-        // statement generated with no dates supplied). Do NOT touch or
-        // duplicate the existing previousStatementOpt-based cycleStart
-        // fallback below — that logic is more accurate than a billing-cycle
-        // guess when a prior statement actually exists, and must stay exactly
-        // as-is.
         if (effectiveStatementDate == null && previousStatementOpt.isEmpty()) {
+            // First-ever statement for this card, no explicit dates: derive the
+            // most recently closed cycle relative to today.
             LocalDate[] window = resolveCycleWindow(card.getBillingCycle(), LocalDate.now());
             effectiveStatementDate = window[1]; // cycleEnd
             derivedCycleStart = window[0];
         } else if (effectiveStatementDate == null) {
-            LocalDate[] window = resolveCycleWindow(card.getBillingCycle(), LocalDate.now());
-            effectiveStatementDate = window[1];
+            // A prior statement exists: the next cycle must follow directly from
+            // the prior statement's cycle, not be independently re-derived from
+            // "today." This is what Phase 8 got wrong.
+            LocalDate previousCycleEnd = previousStatementOpt.get().getStatementDate();
+            LocalDate nextCycleEnd = advanceToNextCycleEnd(previousCycleEnd, card.getBillingCycle());
+            if (nextCycleEnd.isAfter(LocalDate.now())) {
+                throw new IllegalStateException(
+                        "Cannot generate a statement for card " + statementDto.getCardId()
+                                + " — the next billing cycle has not closed yet (closes on " + nextCycleEnd + ").");
+            }
+            effectiveStatementDate = nextCycleEnd;
+        }
+
+        // Second safety net: never allow two statements with the same
+        // (cardId, statementDate) pair, explicit dates or not.
+        if (statementRepository.existsByCardIdAndStatementDate(statementDto.getCardId(), effectiveStatementDate)) {
+            throw new DuplicateResourceException(
+                    "A statement for card " + statementDto.getCardId()
+                            + " with statement date " + effectiveStatementDate + " already exists.");
         }
 
         if (effectiveDueDate == null) {
