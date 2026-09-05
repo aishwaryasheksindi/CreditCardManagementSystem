@@ -15,9 +15,9 @@ public interface IKycDocumentService {
 
     List<KycDocumentResponseDto> getDocumentsByCustomerId(String customerId);
 
-    KycDocumentResponseDto verifyDocument(String kycDocumentId, String verifiedByStaffId);
+    KycDocumentResponseDto verifyDocument(String kycDocumentId);
 
-    KycDocumentResponseDto rejectDocument(String kycDocumentId, String verifiedByStaffId, String rejectionReason);
+    KycDocumentResponseDto rejectDocument(String kycDocumentId, String rejectionReason);
 
     void deleteDocument(String kycDocumentId);
 }

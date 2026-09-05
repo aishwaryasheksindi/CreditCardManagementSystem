@@ -3,7 +3,6 @@ package com.crimsonlogic.creditcardmanagementsystem.controller;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycRejectRequestDto;
-import com.crimsonlogic.creditcardmanagementsystem.dto.KycVerifyRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.service.IKycDocumentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -43,36 +42,17 @@ public class KycDocumentController {
     }
 
     @PutMapping("/{id}/verify")
-    public ResponseEntity<KycDocumentResponseDto> verifyDocument(
-            @PathVariable String id,
-            @RequestParam(required = false) String staffId,
-            @RequestBody(required = false) KycVerifyRequestDto verifyRequest) {
-        String finalStaffId = staffId;
-        if (finalStaffId == null && verifyRequest != null) {
-            finalStaffId = verifyRequest.getVerifiedByStaffId();
-        }
-        KycDocumentResponseDto verified = kycDocumentService.verifyDocument(id, finalStaffId);
-        return ResponseEntity.ok(verified);
+    public ResponseEntity<KycDocumentResponseDto> verifyDocument(@PathVariable String id) {
+        return ResponseEntity.ok(kycDocumentService.verifyDocument(id));
     }
 
     @PutMapping("/{id}/reject")
     public ResponseEntity<KycDocumentResponseDto> rejectDocument(
             @PathVariable String id,
-            @RequestParam(required = false) String staffId,
-            @RequestParam(required = false) String reason,
-            @RequestBody(required = false) KycRejectRequestDto rejectRequest) {
-        String finalStaffId = staffId;
-        String finalReason = reason;
-        if (rejectRequest != null) {
-            if (finalStaffId == null) {
-                finalStaffId = rejectRequest.getVerifiedByStaffId();
-            }
-            if (finalReason == null) {
-                finalReason = rejectRequest.getRejectionReason();
-            }
-        }
-        KycDocumentResponseDto rejected = kycDocumentService.rejectDocument(id, finalStaffId, finalReason);
-        return ResponseEntity.ok(rejected);
+            @RequestBody(required = false) KycRejectRequestDto rejectRequest,
+            @RequestParam(required = false) String reason) {
+        String finalReason = reason != null ? reason : (rejectRequest != null ? rejectRequest.getRejectionReason() : null);
+        return ResponseEntity.ok(kycDocumentService.rejectDocument(id, finalReason));
     }
 
     @DeleteMapping("/{id}")

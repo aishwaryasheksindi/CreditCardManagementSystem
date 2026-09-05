@@ -4,12 +4,15 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Staff;
 import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.KycDocumentRepository;
+import com.crimsonlogic.creditcardmanagementsystem.repository.StaffRepository;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
 import com.crimsonlogic.creditcardmanagementsystem.utility.DocumentValidationUtil;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
@@ -24,13 +27,19 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     private final KycDocumentRepository kycDocumentRepository;
     private final CustomerRepository customerRepository;
     private final IAuditLogService auditLogService;
+    private final StaffRepository staffRepository;
+    private final CurrentUserContext currentUserContext;
 
     public KycDocumentServiceImpl(KycDocumentRepository kycDocumentRepository,
                                   CustomerRepository customerRepository,
-                                  IAuditLogService auditLogService) {
+                                  IAuditLogService auditLogService,
+                                  StaffRepository staffRepository,
+                                  CurrentUserContext currentUserContext) {
         this.kycDocumentRepository = kycDocumentRepository;
         this.customerRepository = customerRepository;
         this.auditLogService = auditLogService;
+        this.staffRepository = staffRepository;
+        this.currentUserContext = currentUserContext;
     }
 
     private String generateUniqueKycDocumentId() {
@@ -96,12 +105,18 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     }
 
     @Override
-    public KycDocumentResponseDto verifyDocument(String kycDocumentId, String verifiedByStaffId) {
+    public KycDocumentResponseDto verifyDocument(String kycDocumentId) {
+        String actingUserId = currentUserContext.getCurrentUserId();
+        Staff actingStaff = staffRepository.findByUserId(actingUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No staff record found for the authenticated user: " + actingUserId));
+        String actingStaffId = actingStaff.getStaffId();
+
         KycDocument document = kycDocumentRepository.findById(kycDocumentId)
                 .orElseThrow(() -> new ResourceNotFoundException("KYC Document not found with ID: " + kycDocumentId));
 
         document.setStatus(KycStatus.VERIFIED);
-        document.setVerifiedByStaffId(verifiedByStaffId);
+        document.setVerifiedByStaffId(actingStaffId);
         document.setVerifiedAt(LocalDateTime.now());
         document.setRejectionReason(null);
 
@@ -113,18 +128,24 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         customer.setKycStatus(KycStatus.VERIFIED);
         customerRepository.save(customer);
 
-        auditLogService.logAction(verifiedByStaffId, AuditAction.STATUS_CHANGE, "KycDocument", kycDocumentId, "KYC document VERIFIED by staff " + verifiedByStaffId);
+        auditLogService.logAction(actingStaffId, AuditAction.STATUS_CHANGE, "KycDocument", kycDocumentId, "KYC document VERIFIED by staff " + actingStaffId);
 
         return convertToResponseDto(saved);
     }
 
     @Override
-    public KycDocumentResponseDto rejectDocument(String kycDocumentId, String verifiedByStaffId, String rejectionReason) {
+    public KycDocumentResponseDto rejectDocument(String kycDocumentId, String rejectionReason) {
+        String actingUserId = currentUserContext.getCurrentUserId();
+        Staff actingStaff = staffRepository.findByUserId(actingUserId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No staff record found for the authenticated user: " + actingUserId));
+        String actingStaffId = actingStaff.getStaffId();
+
         KycDocument document = kycDocumentRepository.findById(kycDocumentId)
                 .orElseThrow(() -> new ResourceNotFoundException("KYC Document not found with ID: " + kycDocumentId));
 
         document.setStatus(KycStatus.REJECTED);
-        document.setVerifiedByStaffId(verifiedByStaffId);
+        document.setVerifiedByStaffId(actingStaffId);
         document.setVerifiedAt(LocalDateTime.now());
         document.setRejectionReason(rejectionReason);
 
@@ -136,7 +157,7 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         customer.setKycStatus(KycStatus.REJECTED);
         customerRepository.save(customer);
 
-        auditLogService.logAction(verifiedByStaffId, AuditAction.STATUS_CHANGE, "KycDocument", kycDocumentId, "KYC document REJECTED by staff " + verifiedByStaffId);
+        auditLogService.logAction(actingStaffId, AuditAction.STATUS_CHANGE, "KycDocument", kycDocumentId, "KYC document REJECTED by staff " + actingStaffId);
 
         return convertToResponseDto(saved);
     }
