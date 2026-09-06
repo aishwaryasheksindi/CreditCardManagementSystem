@@ -1,5 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserProfileResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserProfileUpdateRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 
@@ -14,4 +16,10 @@ public interface IUserService {
     void recordFailedLoginAttempt(String username);
 
     void resetFailedLoginAttempts(String userId);
+
+    UserProfileResponseDto getMyProfile();
+
+    UserProfileResponseDto updateMyProfile(UserProfileUpdateRequestDto requestDto);
+
+    void changeMyPassword(com.crimsonlogic.creditcardmanagementsystem.dto.ChangePasswordRequestDto requestDto);
 }
