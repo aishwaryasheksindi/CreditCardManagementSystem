@@ -440,4 +440,25 @@ class CardServiceTest {
                 contains("Support agent verified customer")
         );
     }
+
+    @Test
+    void testGetCardsByCustomerId_Success() {
+        String customerId = "CUST1001";
+        Card card = new Card();
+        card.setCardId("CARD1001");
+        card.setCardReference("TOK-CARD1001");
+        card.setCardStatus(CardStatus.ACTIVE);
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        card.setCustomer(customer);
+
+        when(cardRepository.findByCustomer_CustomerId(customerId)).thenReturn(java.util.List.of(card));
+
+        java.util.List<CardResponseDto> result = cardService.getCardsByCustomerId(customerId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("CARD1001", result.get(0).getCardId());
+        verify(currentUserContext, times(1)).assertCustomerOwnership(customerId);
+    }
 }

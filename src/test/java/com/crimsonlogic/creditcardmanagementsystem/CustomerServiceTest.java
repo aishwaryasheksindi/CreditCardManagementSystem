@@ -49,6 +49,9 @@ class CustomerServiceTest {
     @Mock
     private IAuditLogService auditLogService;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
     @InjectMocks
     private CustomerServiceImpl customerService;
 
@@ -175,5 +178,23 @@ class CustomerServiceTest {
 
         assertThrows(DuplicateResourceException.class, () -> customerService.registerCustomer(request));
         verify(customerRepository, never()).save(any(Customer.class));
+    }
+
+    @Test
+    void testGetMyCustomerProfile_Success() {
+        String userId = "USER1001";
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        customer.setName("John Doe");
+        customer.setUserId(userId);
+
+        when(currentUserContext.getCurrentUserId()).thenReturn(userId);
+        when(customerRepository.findByUserId(userId)).thenReturn(Optional.of(customer));
+
+        CustomerResponseDto result = customerService.getMyCustomerProfile();
+
+        assertNotNull(result);
+        assertEquals("CUST1001", result.getCustomerId());
+        assertEquals("John Doe", result.getName());
     }
 }

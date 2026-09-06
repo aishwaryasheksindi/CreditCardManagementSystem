@@ -41,6 +41,11 @@ public class CustomerController {
         return ResponseEntity.ok(customers);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<CustomerResponseDto> getMyCustomerProfile() {
+        return ResponseEntity.ok(customerService.getMyCustomerProfile());
+    }
+
     // Get customer by ID
     @GetMapping("/{customerId}")
     public ResponseEntity<CustomerResponseDto> getCustomerById(

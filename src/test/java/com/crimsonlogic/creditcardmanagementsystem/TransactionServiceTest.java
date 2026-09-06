@@ -3,6 +3,7 @@ package com.crimsonlogic.creditcardmanagementsystem;
 import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.TransactionResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Merchant;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Transaction;
 import com.crimsonlogic.creditcardmanagementsystem.entity.TransactionCategory;
@@ -233,5 +234,35 @@ class TransactionServiceTest {
         refund.setAmount(new BigDecimal("1000.00"));
         transactionService.addTransaction(refund);
         assertEquals(new BigDecimal("2000.00"), card.getAvailableLimit());
+    }
+
+    @Test
+    void testGetTransactionsByCardId_Success() {
+        String cardId = "CARD1001";
+        Card card = new Card();
+        card.setCardId(cardId);
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST1001");
+        card.setCustomer(customer);
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("TXN1001");
+        transaction.setCard(card);
+        transaction.setAmount(new BigDecimal("100.00"));
+        transaction.setCurrency("INR");
+        transaction.setTransactionType(TransactionType.PURCHASE);
+        transaction.setTransactionStatus(TransactionStatus.COMPLETED);
+        transaction.setTransactionDate(LocalDateTime.now());
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(transactionRepository.findByCard_CardIdOrderByTransactionDateDesc(cardId))
+                .thenReturn(java.util.List.of(transaction));
+
+        java.util.List<TransactionResponseDto> result = transactionService.getTransactionsByCardId(cardId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("TXN1001", result.get(0).getTransactionId());
+        verify(currentUserContext, times(1)).assertCustomerOwnership("CUST1001");
     }
 }

@@ -20,6 +20,8 @@ import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,6 +128,15 @@ public class CardServiceImpl implements ICardService {
         }
 
         return convertToResponseDto(card);
+    }
+
+    @Override
+    public List<CardResponseDto> getCardsByCustomerId(String customerId) {
+        currentUserContext.assertCustomerOwnership(customerId);
+        List<Card> cards = cardRepository.findByCustomer_CustomerId(customerId);
+        return cards.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override

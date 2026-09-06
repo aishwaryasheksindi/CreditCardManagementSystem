@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
@@ -39,5 +41,11 @@ public class TransactionController {
                 transactionService.getTransactionById(transactionId);
 
         return ResponseEntity.ok(transactionDto);
+    }
+
+    @GetMapping("/card/{cardId}")
+    public ResponseEntity<List<TransactionResponseDto>> getTransactionsByCardId(
+            @PathVariable String cardId) {
+        return ResponseEntity.ok(transactionService.getTransactionsByCardId(cardId));
     }
 }

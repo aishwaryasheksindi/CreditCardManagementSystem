@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -34,6 +35,12 @@ public class CardController {
                 savedCard,
                 HttpStatus.CREATED
         );
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<CardResponseDto>> getCardsByCustomerId(
+            @PathVariable String customerId) {
+        return ResponseEntity.ok(cardService.getCardsByCustomerId(customerId));
     }
 
     @GetMapping("/{cardId}")

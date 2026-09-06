@@ -11,4 +11,6 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, String> {
 
     List<Transaction> findByCard_CardIdAndTransactionDateBetween(String cardId, LocalDateTime start, LocalDateTime end);
+
+    List<Transaction> findByCard_CardIdOrderByTransactionDateDesc(String cardId);
 }

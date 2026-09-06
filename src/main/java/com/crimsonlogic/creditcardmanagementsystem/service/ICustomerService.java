@@ -15,4 +15,6 @@ public interface ICustomerService {
     CustomerResponseDto updateCustomer(String customerId, CustomerRequestDto customerDto);
 
     List<CustomerResponseDto> searchCustomers(String name, String phoneNumber, String email);
+
+    CustomerResponseDto getMyCustomerProfile();
 }

@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionServiceImpl implements ITransactionService {
@@ -178,6 +180,18 @@ public class TransactionServiceImpl implements ITransactionService {
         }
 
         return convertToResponseDto(transaction);
+    }
+
+    @Override
+    public List<TransactionResponseDto> getTransactionsByCardId(String cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
+        currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        List<Transaction> transactions =
+                transactionRepository.findByCard_CardIdOrderByTransactionDateDesc(cardId);
+        return transactions.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
 

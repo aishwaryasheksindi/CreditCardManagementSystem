@@ -4,6 +4,8 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.CardBlockRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 
+import java.util.List;
+
 public interface ICardService {
 
     CardResponseDto addCard(CardRequestDto cardDto);
@@ -21,4 +23,6 @@ public interface ICardService {
     CardResponseDto unblockCard(String cardId, String reason);
 
     CardResponseDto replaceCard(String cardId, String reason);
+
+    List<CardResponseDto> getCardsByCustomerId(String customerId);
 }

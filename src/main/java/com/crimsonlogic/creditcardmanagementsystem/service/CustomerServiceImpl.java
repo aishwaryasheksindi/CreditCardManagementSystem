@@ -14,7 +14,9 @@ import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundExc
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.UserRepository;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,17 +36,29 @@ public class CustomerServiceImpl implements ICustomerService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final IAuditLogService auditLogService;
+    private final CurrentUserContext currentUserContext;
 
     public CustomerServiceImpl(CustomerRepository customerRepository,
                                UserRepository userRepository,
                                RoleRepository roleRepository,
                                PasswordEncoder passwordEncoder,
                                IAuditLogService auditLogService) {
+        this(customerRepository, userRepository, roleRepository, passwordEncoder, auditLogService, null);
+    }
+
+    @Autowired
+    public CustomerServiceImpl(CustomerRepository customerRepository,
+                               UserRepository userRepository,
+                               RoleRepository roleRepository,
+                               PasswordEncoder passwordEncoder,
+                               IAuditLogService auditLogService,
+                               CurrentUserContext currentUserContext) {
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditLogService = auditLogService;
+        this.currentUserContext = currentUserContext;
     }
 
     @Override
@@ -187,5 +201,14 @@ public class CustomerServiceImpl implements ICustomerService {
         customerDto.setCustomerStatus(customer.getCustomerStatus());
         customerDto.setUserId(customer.getUserId());
         return customerDto;
+    }
+
+    @Override
+    public CustomerResponseDto getMyCustomerProfile() {
+        String userId = currentUserContext.getCurrentUserId();
+        Customer customer = customerRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No customer record found for the current user"));
+        return convertToResponseDto(customer);
     }
 }
