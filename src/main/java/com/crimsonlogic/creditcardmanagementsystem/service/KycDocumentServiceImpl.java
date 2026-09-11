@@ -2,7 +2,6 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
-import com.crimsonlogic.creditcardmanagementsystem.entity.Admin;
 import com.crimsonlogic.creditcardmanagementsystem.entity.BankOfficer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
@@ -63,14 +62,28 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     public KycDocumentResponseDto submitDocument(KycDocumentRequestDto requestDto) {
         validateCustomer(requestDto.getCustomerId());
 
-        DocumentValidationUtil.validate(requestDto.getDocumentType(), requestDto.getDocumentNumber());
+        String currentUserId = currentUserContext.getCurrentUserId();
+
+        Customer customer = customerRepository.findById(requestDto.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Customer not found with ID: " + requestDto.getCustomerId()));
+
+        if (!customer.getUserId().equals(currentUserId)) {
+            throw new AccessDeniedException(
+                    "You are not authorized to submit KYC documents for this customer");
+        }
+
+        DocumentValidationUtil.validate(
+                requestDto.getDocumentType(),
+                requestDto.getDocumentNumber());
 
         String normalizedDocNumber = requestDto.getDocumentNumber().trim().toUpperCase();
 
         if (kycDocumentRepository.findByDocumentTypeAndDocumentNumberAndStatus(
                 requestDto.getDocumentType(), normalizedDocNumber, KycStatus.VERIFIED).isPresent()) {
             throw new DuplicateResourceException(
-                    "This " + requestDto.getDocumentType() + " is already verified against another customer account");
+                    "This " + requestDto.getDocumentType()
+                            + " is already verified against another customer account");
         }
 
         KycDocument document = new KycDocument();
@@ -83,6 +96,7 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         document.setSubmittedAt(LocalDateTime.now());
 
         KycDocument saved = kycDocumentRepository.save(document);
+
         return convertToResponseDto(saved);
     }
 
@@ -111,15 +125,15 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         if (actingStaff instanceof BankOfficer officer) {
             String officerBranch = officer.getBranchCode();
             String customerBranch = customer.getBranchCode();
-            if (officerBranch == null || customerBranch == null || !officerBranch.equals(customerBranch)) {
+
+            if (officerBranch == null || customerBranch == null
+                    || !officerBranch.equals(customerBranch)) {
                 throw new AccessDeniedException(
                         "Bank officer is only authorized to verify or reject KYC documents for customers in their own branch");
             }
-        } else if (actingStaff instanceof Admin) {
-            // Admin is central/system-wide and exempt from branch restrictions
         } else {
             throw new AccessDeniedException(
-                    "Only Admin or Bank Officer is authorized to verify or reject KYC documents");
+                    "Only Bank Officer is authorized to verify or reject KYC documents");
         }
     }
 
