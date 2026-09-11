@@ -88,6 +88,8 @@ public class UserServiceImpl implements IUserService {
 
         user.setAccountStatus(userRequestDto.getAccountStatus());
 
+        user.setCreatedAt(LocalDateTime.now());
+
         // Save User
         User savedUser = userRepository.save(user);
 

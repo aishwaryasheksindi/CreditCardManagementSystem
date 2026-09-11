@@ -1,5 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem;
 
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserRequestDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.UserResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Role;
 import com.crimsonlogic.creditcardmanagementsystem.entity.User;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
@@ -154,5 +156,30 @@ class UserServiceTest {
 
         assertNotNull(userDetails);
         assertTrue(userDetails.isAccountNonLocked());
+    }
+
+    @Test
+    void testAddUser_PopulatesCreatedAt() {
+        UserRequestDto request = new UserRequestDto(
+                "newuser", "newuser@example.com", "Password@123", "ROLE001", "ACTIVE"
+        );
+
+        Role role = new Role();
+        role.setRoleId("ROLE001");
+        role.setRoleName("STAFF");
+
+        when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("newuser@example.com")).thenReturn(Optional.empty());
+        when(roleRepository.findById("ROLE001")).thenReturn(Optional.of(role));
+        when(passwordEncoder.encode("Password@123")).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserResponseDto response = userService.addUser(request);
+
+        assertNotNull(response);
+        assertNotNull(response.getCreatedAt());
+        assertTrue(response.getCreatedAt().isBefore(LocalDateTime.now().plusSeconds(1)));
+        assertTrue(response.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(1)));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }
