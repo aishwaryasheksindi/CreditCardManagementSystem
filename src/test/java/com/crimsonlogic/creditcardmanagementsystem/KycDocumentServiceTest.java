@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Admin;
 import com.crimsonlogic.creditcardmanagementsystem.entity.BankOfficer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
@@ -11,6 +12,7 @@ import com.crimsonlogic.creditcardmanagementsystem.enums.DocumentType;
 import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.KycDocumentRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StaffRepository;
@@ -115,9 +117,10 @@ class KycDocumentServiceTest {
         String staffId = "STAFF_007";
         String customerId = "CUST101";
 
-        Staff staff = new BankOfficer();
+        BankOfficer staff = new BankOfficer();
         staff.setStaffId(staffId);
         staff.setUserId(actingUserId);
+        staff.setBranchCode("CN8080");
 
         KycDocument document = new KycDocument();
         document.setKycDocumentId(docId);
@@ -128,6 +131,7 @@ class KycDocumentServiceTest {
 
         Customer customer = new Customer();
         customer.setCustomerId(customerId);
+        customer.setBranchCode("CN8080");
         customer.setKycStatus(KycStatus.PENDING);
 
         when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
@@ -155,9 +159,10 @@ class KycDocumentServiceTest {
         String customerId = "CUST101";
         String rejectionReason = "Document image is blurred and unreadable";
 
-        Staff staff = new BankOfficer();
+        BankOfficer staff = new BankOfficer();
         staff.setStaffId(staffId);
         staff.setUserId(actingUserId);
+        staff.setBranchCode("CN8080");
 
         KycDocument document = new KycDocument();
         document.setKycDocumentId(docId);
@@ -168,6 +173,7 @@ class KycDocumentServiceTest {
 
         Customer customer = new Customer();
         customer.setCustomerId(customerId);
+        customer.setBranchCode("CN8080");
         customer.setKycStatus(KycStatus.PENDING);
 
         when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
@@ -201,6 +207,194 @@ class KycDocumentServiceTest {
         });
 
         assertTrue(ex.getMessage().contains("No staff record found for the authenticated user: " + actingUserId));
+        verify(kycDocumentRepository, never()).save(any());
+        verify(customerRepository, never()).save(any());
+    }
+
+    @Test
+    void testVerifyDocument_Admin_Success_BypassesBranchRestriction() {
+        String docId = "DOC2001";
+        String actingUserId = "USR_ADMIN_1";
+        String staffId = "ADMIN_001";
+        String customerId = "CUST201";
+
+        Admin admin = new Admin();
+        admin.setStaffId(staffId);
+        admin.setUserId(actingUserId);
+
+        KycDocument document = new KycDocument();
+        document.setKycDocumentId(docId);
+        document.setCustomerId(customerId);
+        document.setDocumentType(DocumentType.PASSPORT);
+        document.setDocumentNumber("A1234567");
+        document.setStatus(KycStatus.PENDING);
+
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setBranchCode("CN4200"); // Indiranagar branch
+        customer.setKycStatus(KycStatus.PENDING);
+
+        when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
+        when(staffRepository.findByUserId(actingUserId)).thenReturn(Optional.of(admin));
+        when(kycDocumentRepository.findById(docId)).thenReturn(Optional.of(document));
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(kycDocumentRepository.save(any(KycDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        KycDocumentResponseDto response = kycDocumentService.verifyDocument(docId);
+
+        assertNotNull(response);
+        assertEquals(KycStatus.VERIFIED, response.getStatus());
+        assertEquals(staffId, response.getVerifiedByStaffId());
+        assertEquals(KycStatus.VERIFIED, customer.getKycStatus());
+        verify(customerRepository).save(customer);
+    }
+
+    @Test
+    void testVerifyDocument_BankOfficer_SameBranch_Success() {
+        String docId = "DOC3001";
+        String actingUserId = "USR_BO_IND";
+        String staffId = "STAFF_IND";
+        String customerId = "CUST301";
+
+        BankOfficer officer = new BankOfficer();
+        officer.setStaffId(staffId);
+        officer.setUserId(actingUserId);
+        officer.setBranchCode("CN4200");
+
+        KycDocument document = new KycDocument();
+        document.setKycDocumentId(docId);
+        document.setCustomerId(customerId);
+        document.setDocumentType(DocumentType.AADHAAR);
+        document.setDocumentNumber("123456789012");
+        document.setStatus(KycStatus.PENDING);
+
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setBranchCode("CN4200");
+        customer.setKycStatus(KycStatus.PENDING);
+
+        when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
+        when(staffRepository.findByUserId(actingUserId)).thenReturn(Optional.of(officer));
+        when(kycDocumentRepository.findById(docId)).thenReturn(Optional.of(document));
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(kycDocumentRepository.save(any(KycDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        KycDocumentResponseDto response = kycDocumentService.verifyDocument(docId);
+
+        assertNotNull(response);
+        assertEquals(KycStatus.VERIFIED, response.getStatus());
+        assertEquals(KycStatus.VERIFIED, customer.getKycStatus());
+        verify(customerRepository).save(customer);
+    }
+
+    @Test
+    void testVerifyDocument_BankOfficer_MismatchedBranch_ThrowsAccessDeniedException() {
+        String docId = "DOC4001";
+        String actingUserId = "USR_BO_KOR";
+        String staffId = "STAFF_KOR";
+        String customerId = "CUST401";
+
+        BankOfficer officer = new BankOfficer();
+        officer.setStaffId(staffId);
+        officer.setUserId(actingUserId);
+        officer.setBranchCode("CN8080"); // Koramangala
+
+        KycDocument document = new KycDocument();
+        document.setKycDocumentId(docId);
+        document.setCustomerId(customerId);
+        document.setDocumentType(DocumentType.AADHAAR);
+        document.setDocumentNumber("123456789012");
+        document.setStatus(KycStatus.PENDING);
+
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setBranchCode("CN4200"); // Indiranagar
+
+        when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
+        when(staffRepository.findByUserId(actingUserId)).thenReturn(Optional.of(officer));
+        when(kycDocumentRepository.findById(docId)).thenReturn(Optional.of(document));
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () -> {
+            kycDocumentService.verifyDocument(docId);
+        });
+
+        assertTrue(ex.getMessage().contains("Bank officer is only authorized to verify or reject KYC documents for customers in their own branch"));
+        verify(kycDocumentRepository, never()).save(any());
+        verify(customerRepository, never()).save(any());
+    }
+
+    @Test
+    void testRejectDocument_BankOfficer_MismatchedBranch_ThrowsAccessDeniedException() {
+        String docId = "DOC5001";
+        String actingUserId = "USR_BO_KOR";
+        String staffId = "STAFF_KOR";
+        String customerId = "CUST501";
+
+        BankOfficer officer = new BankOfficer();
+        officer.setStaffId(staffId);
+        officer.setUserId(actingUserId);
+        officer.setBranchCode("CN8080");
+
+        KycDocument document = new KycDocument();
+        document.setKycDocumentId(docId);
+        document.setCustomerId(customerId);
+        document.setDocumentType(DocumentType.AADHAAR);
+        document.setDocumentNumber("123456789012");
+        document.setStatus(KycStatus.PENDING);
+
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setBranchCode("CN4200");
+
+        when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
+        when(staffRepository.findByUserId(actingUserId)).thenReturn(Optional.of(officer));
+        when(kycDocumentRepository.findById(docId)).thenReturn(Optional.of(document));
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () -> {
+            kycDocumentService.rejectDocument(docId, "Invalid documents");
+        });
+
+        assertTrue(ex.getMessage().contains("Bank officer is only authorized to verify or reject KYC documents for customers in their own branch"));
+        verify(kycDocumentRepository, never()).save(any());
+        verify(customerRepository, never()).save(any());
+    }
+
+    @Test
+    void testVerifyDocument_InvalidAadhaarNumber_ThrowsIllegalArgumentException() {
+        String docId = "DOC6001";
+        String actingUserId = "USR_BO_KOR";
+        String staffId = "STAFF_KOR";
+        String customerId = "CUST601";
+
+        BankOfficer officer = new BankOfficer();
+        officer.setStaffId(staffId);
+        officer.setUserId(actingUserId);
+        officer.setBranchCode("CN8080");
+
+        KycDocument document = new KycDocument();
+        document.setKycDocumentId(docId);
+        document.setCustomerId(customerId);
+        document.setDocumentType(DocumentType.AADHAAR);
+        document.setDocumentNumber("888888999999"); // Invalid excessive consecutive pattern
+        document.setStatus(KycStatus.PENDING);
+
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setBranchCode("CN8080");
+        customer.setKycStatus(KycStatus.PENDING);
+
+        when(currentUserContext.getCurrentUserId()).thenReturn(actingUserId);
+        when(staffRepository.findByUserId(actingUserId)).thenReturn(Optional.of(officer));
+        when(kycDocumentRepository.findById(docId)).thenReturn(Optional.of(document));
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            kycDocumentService.verifyDocument(docId);
+        });
+
+        assertTrue(ex.getMessage().contains("Invalid AADHAAR number format"));
         verify(kycDocumentRepository, never()).save(any());
         verify(customerRepository, never()).save(any());
     }

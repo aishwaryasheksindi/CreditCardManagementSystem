@@ -56,6 +56,13 @@ public class CustomerRegistrationRequestDto {
     @NotBlank(message = "Income range is required")
     private String incomeRange;
 
+    @NotBlank(message = "Branch code is required")
+    @Pattern(
+        regexp = "^(CN8080|CN4200)$",
+        message = "Branch code must be either CN8080 or CN4200"
+    )
+    private String branchCode;
+
     public CustomerRegistrationRequestDto() {
     }
 
@@ -71,6 +78,13 @@ public class CustomerRegistrationRequestDto {
         this.dateOfBirth = dateOfBirth;
         this.employment = employment;
         this.incomeRange = incomeRange;
+    }
+
+    public CustomerRegistrationRequestDto(String username, String email, String password, String name,
+                                          String phoneNumber, String address, LocalDate dateOfBirth,
+                                          String employment, String incomeRange, String branchCode) {
+        this(username, email, password, name, phoneNumber, address, dateOfBirth, employment, incomeRange);
+        this.branchCode = branchCode;
     }
 
     public String getUsername() {
@@ -143,5 +157,13 @@ public class CustomerRegistrationRequestDto {
 
     public void setIncomeRange(String incomeRange) {
         this.incomeRange = incomeRange;
+    }
+
+    public String getBranchCode() {
+        return branchCode;
+    }
+
+    public void setBranchCode(String branchCode) {
+        this.branchCode = branchCode;
     }
 }

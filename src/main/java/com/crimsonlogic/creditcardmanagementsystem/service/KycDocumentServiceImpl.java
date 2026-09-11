@@ -2,6 +2,8 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Admin;
+import com.crimsonlogic.creditcardmanagementsystem.entity.BankOfficer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Staff;
@@ -9,6 +11,7 @@ import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.KycStatus;
 import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.KycDocumentRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StaffRepository;
@@ -104,6 +107,22 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
                 .collect(Collectors.toList());
     }
 
+    private void validateKycAuthorization(Staff actingStaff, Customer customer) {
+        if (actingStaff instanceof BankOfficer officer) {
+            String officerBranch = officer.getBranchCode();
+            String customerBranch = customer.getBranchCode();
+            if (officerBranch == null || customerBranch == null || !officerBranch.equals(customerBranch)) {
+                throw new AccessDeniedException(
+                        "Bank officer is only authorized to verify or reject KYC documents for customers in their own branch");
+            }
+        } else if (actingStaff instanceof Admin) {
+            // Admin is central/system-wide and exempt from branch restrictions
+        } else {
+            throw new AccessDeniedException(
+                    "Only Admin or Bank Officer is authorized to verify or reject KYC documents");
+        }
+    }
+
     @Override
     public KycDocumentResponseDto verifyDocument(String kycDocumentId) {
         String actingUserId = currentUserContext.getCurrentUserId();
@@ -115,6 +134,14 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         KycDocument document = kycDocumentRepository.findById(kycDocumentId)
                 .orElseThrow(() -> new ResourceNotFoundException("KYC Document not found with ID: " + kycDocumentId));
 
+        Customer customer = customerRepository.findById(document.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Linked customer not found with ID: " + document.getCustomerId()));
+
+        validateKycAuthorization(actingStaff, customer);
+
+        // Validate document number format before marking as verified
+        DocumentValidationUtil.validate(document.getDocumentType(), document.getDocumentNumber());
+
         document.setStatus(KycStatus.VERIFIED);
         document.setVerifiedByStaffId(actingStaffId);
         document.setVerifiedAt(LocalDateTime.now());
@@ -123,8 +150,6 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         KycDocument saved = kycDocumentRepository.save(document);
 
         // Update linked Customer KYC status
-        Customer customer = customerRepository.findById(document.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Linked customer not found with ID: " + document.getCustomerId()));
         customer.setKycStatus(KycStatus.VERIFIED);
         customerRepository.save(customer);
 
@@ -144,6 +169,11 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         KycDocument document = kycDocumentRepository.findById(kycDocumentId)
                 .orElseThrow(() -> new ResourceNotFoundException("KYC Document not found with ID: " + kycDocumentId));
 
+        Customer customer = customerRepository.findById(document.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Linked customer not found with ID: " + document.getCustomerId()));
+
+        validateKycAuthorization(actingStaff, customer);
+
         document.setStatus(KycStatus.REJECTED);
         document.setVerifiedByStaffId(actingStaffId);
         document.setVerifiedAt(LocalDateTime.now());
@@ -152,8 +182,6 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
         KycDocument saved = kycDocumentRepository.save(document);
 
         // Update linked Customer KYC status
-        Customer customer = customerRepository.findById(document.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Linked customer not found with ID: " + document.getCustomerId()));
         customer.setKycStatus(KycStatus.REJECTED);
         customerRepository.save(customer);
 

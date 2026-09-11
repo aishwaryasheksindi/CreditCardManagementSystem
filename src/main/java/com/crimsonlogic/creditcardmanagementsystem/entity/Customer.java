@@ -40,6 +40,8 @@ public class Customer {
 
     private String userId;
 
+    private String branchCode;
+
     public Customer() {
     }
 
@@ -137,5 +139,13 @@ public class Customer {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getBranchCode() {
+        return branchCode;
+    }
+
+    public void setBranchCode(String branchCode) {
+        this.branchCode = branchCode;
     }
 }

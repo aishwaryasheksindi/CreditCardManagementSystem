@@ -19,6 +19,7 @@ public class CustomerResponseDto {
     private String creditProfile;
     private CustomerStatus customerStatus;
     private String userId;
+    private String branchCode;
 
     public CustomerResponseDto() {
     }
@@ -35,6 +36,11 @@ public class CustomerResponseDto {
         this.kycStatus = kycStatus;
         this.creditProfile = creditProfile;
         this.customerStatus = customerStatus;
+    }
+
+    public CustomerResponseDto(String customerId, String name, String email, String phoneNumber, String address, LocalDate dateOfBirth, String employment, String incomeRange, KycStatus kycStatus, String creditProfile, CustomerStatus customerStatus, String branchCode) {
+        this(customerId, name, email, phoneNumber, address, dateOfBirth, employment, incomeRange, kycStatus, creditProfile, customerStatus);
+        this.branchCode = branchCode;
     }
 
     public String getCustomerId() {
@@ -131,5 +137,13 @@ public class CustomerResponseDto {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getBranchCode() {
+        return branchCode;
+    }
+
+    public void setBranchCode(String branchCode) {
+        this.branchCode = branchCode;
     }
 }

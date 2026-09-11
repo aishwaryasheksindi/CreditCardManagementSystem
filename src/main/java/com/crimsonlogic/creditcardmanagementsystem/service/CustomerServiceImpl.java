@@ -174,6 +174,7 @@ public class CustomerServiceImpl implements ICustomerService {
         customer.setDateOfBirth(registrationDto.getDateOfBirth());
         customer.setEmployment(registrationDto.getEmployment());
         customer.setIncomeRange(registrationDto.getIncomeRange());
+        customer.setBranchCode(registrationDto.getBranchCode());
         customer.setKycStatus(KycStatus.PENDING);
         customer.setCustomerStatus(CustomerStatus.ACTIVE);
         Customer savedCustomer = customerRepository.save(customer);
@@ -200,6 +201,7 @@ public class CustomerServiceImpl implements ICustomerService {
         customerDto.setCreditProfile(customer.getCreditProfile());
         customerDto.setCustomerStatus(customer.getCustomerStatus());
         customerDto.setUserId(customer.getUserId());
+        customerDto.setBranchCode(customer.getBranchCode());
         return customerDto;
     }
 

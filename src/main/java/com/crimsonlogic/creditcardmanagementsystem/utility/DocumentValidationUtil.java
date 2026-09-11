@@ -16,9 +16,9 @@ public final class DocumentValidationUtil {
         }
         String value = documentNumber.trim().toUpperCase();
         boolean valid = switch (type) {
-            case AADHAAR -> value.matches("^\\d{12}$");
+            case AADHAAR -> isValidAadhaar(value);
             case PAN -> value.matches("^[A-Z]{5}[0-9]{4}[A-Z]$");
-            case PASSPORT -> value.matches("^[A-Z][0-9]{7}$"); // Indian passport format
+            case PASSPORT -> isValidPassport(value);
             case VOTER_ID -> value.matches("^[A-Z]{3}[0-9]{7}$"); // EPIC format
             case DRIVING_LICENSE -> value.matches("^[A-Z]{2}[0-9]{13,14}$"); // simplified DL format
         };
@@ -26,5 +26,25 @@ public final class DocumentValidationUtil {
             throw new IllegalArgumentException(
                     "Invalid " + type + " number format: " + documentNumber);
         }
+    }
+
+    public static boolean isValidAadhaar(String documentNumber) {
+        if (documentNumber == null) {
+            return false;
+        }
+        String value = documentNumber.trim();
+        if (!value.matches("^\\d{12}$")) {
+            return false;
+        }
+        // Reject obvious repeated-digit patterns and excessive consecutive repetition of 6 or more identical digits
+        return !value.matches(".*(\\d)\\1{5,}.*");
+    }
+
+    public static boolean isValidPassport(String documentNumber) {
+        if (documentNumber == null) {
+            return false;
+        }
+        String value = documentNumber.trim().toUpperCase();
+        return value.matches("^[A-Z][0-9]{7}$");
     }
 }
