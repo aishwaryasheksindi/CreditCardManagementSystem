@@ -13,4 +13,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     List<Transaction> findByCard_CardIdAndTransactionDateBetween(String cardId, LocalDateTime start, LocalDateTime end);
 
     List<Transaction> findByCard_CardIdOrderByTransactionDateDesc(String cardId);
+
+    List<Transaction> findByCard_Customer_CustomerIdOrderByTransactionDateDesc(String customerId);
 }
