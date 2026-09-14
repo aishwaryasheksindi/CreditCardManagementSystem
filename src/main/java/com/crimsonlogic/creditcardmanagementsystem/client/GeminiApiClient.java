@@ -4,6 +4,7 @@ import com.crimsonlogic.creditcardmanagementsystem.dto.EmiTenureOptionDto;
 import com.crimsonlogic.creditcardmanagementsystem.enums.DisputeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +36,7 @@ public class GeminiApiClient {
     private final String apiUrl;
     private final RestTemplate restTemplate;
 
+    @Autowired
     public GeminiApiClient(@Value("${gemini.api.key:}") String apiKey,
                            @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent}") String apiUrl) {
         this.apiKey = apiKey != null ? apiKey.trim() : "";
