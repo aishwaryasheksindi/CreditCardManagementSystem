@@ -60,7 +60,13 @@ class KycDocumentServiceTest {
         request.setDocumentNumber("123456789012");
         request.setDocumentUrl("https://storage.example.com/aadhaar.pdf");
 
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST101");
+        customer.setUserId("USR_CUST_101");
+
         when(customerRepository.existsById("CUST101")).thenReturn(true);
+        when(customerRepository.findById("CUST101")).thenReturn(Optional.of(customer));
+        when(currentUserContext.getCurrentUserId()).thenReturn("USR_CUST_101");
         when(kycDocumentRepository.existsById(any())).thenReturn(false);
         when(kycDocumentRepository.findByDocumentTypeAndDocumentNumberAndStatus(DocumentType.AADHAAR, "123456789012", KycStatus.VERIFIED))
                 .thenReturn(Optional.empty());
@@ -81,7 +87,13 @@ class KycDocumentServiceTest {
         request.setDocumentType(DocumentType.PAN);
         request.setDocumentNumber("INVALID_PAN_123");
 
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST101");
+        customer.setUserId("USR_CUST_101");
+
         when(customerRepository.existsById("CUST101")).thenReturn(true);
+        when(customerRepository.findById("CUST101")).thenReturn(Optional.of(customer));
+        when(currentUserContext.getCurrentUserId()).thenReturn("USR_CUST_101");
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             kycDocumentService.submitDocument(request);
@@ -98,7 +110,13 @@ class KycDocumentServiceTest {
         request.setDocumentType(DocumentType.PAN);
         request.setDocumentNumber("abcde1234f"); // lowercase to test normalization
 
+        Customer customer = new Customer();
+        customer.setCustomerId("CUST101");
+        customer.setUserId("USR_CUST_101");
+
         when(customerRepository.existsById("CUST101")).thenReturn(true);
+        when(customerRepository.findById("CUST101")).thenReturn(Optional.of(customer));
+        when(currentUserContext.getCurrentUserId()).thenReturn("USR_CUST_101");
         when(kycDocumentRepository.findByDocumentTypeAndDocumentNumberAndStatus(DocumentType.PAN, "ABCDE1234F", KycStatus.VERIFIED))
                 .thenReturn(Optional.of(new KycDocument()));
 

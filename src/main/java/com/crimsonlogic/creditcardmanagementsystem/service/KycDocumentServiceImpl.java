@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Admin;
 import com.crimsonlogic.creditcardmanagementsystem.entity.BankOfficer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
@@ -122,6 +123,9 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     }
 
     private void validateKycAuthorization(Staff actingStaff, Customer customer) {
+        if (actingStaff instanceof Admin) {
+            return;
+        }
         if (actingStaff instanceof BankOfficer officer) {
             String officerBranch = officer.getBranchCode();
             String customerBranch = customer.getBranchCode();
