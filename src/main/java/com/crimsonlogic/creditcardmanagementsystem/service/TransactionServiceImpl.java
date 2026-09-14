@@ -175,7 +175,8 @@ public class TransactionServiceImpl implements ITransactionService {
                                 )
                         );
 
-        if (transaction.getCard() != null && transaction.getCard().getCustomer() != null) {
+        if (transaction.getCard() != null && transaction.getCard().getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(transaction.getCard().getCustomer());
             currentUserContext.assertCustomerOwnership(transaction.getCard().getCustomer().getCustomerId());
         }
 
@@ -185,11 +186,38 @@ public class TransactionServiceImpl implements ITransactionService {
     @Override
     public List<TransactionResponseDto> getTransactionsByCardId(String cardId) {
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
-        currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
+            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        }
         List<Transaction> transactions =
                 transactionRepository.findByCard_CardIdOrderByTransactionDateDesc(cardId);
         return transactions.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TransactionResponseDto> getAllTransactions() {
+        List<Transaction> transactions = transactionRepository.findAll();
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            String officerBranch = currentUserContext.getCurrentOfficerBranchCode();
+            if (officerBranch != null) {
+                transactions = transactions.stream()
+                        .filter(t -> t.getCard() != null && t.getCard().getCustomer() != null
+                                && t.getCard().getCustomer().getBranchCode() != null
+                                && t.getCard().getCustomer().getBranchCode().equalsIgnoreCase(officerBranch))
+                        .collect(Collectors.toList());
+            }
+        }
+        return transactions.stream()
+                .sorted((a, b) -> {
+                    if (a.getTransactionDate() == null && b.getTransactionDate() == null) return 0;
+                    if (a.getTransactionDate() == null) return 1;
+                    if (b.getTransactionDate() == null) return -1;
+                    return b.getTransactionDate().compareTo(a.getTransactionDate());
+                })
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }

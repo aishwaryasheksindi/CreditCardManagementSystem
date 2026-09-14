@@ -10,12 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/card-types")
 public class CardTypeController {
 
     @Autowired
     private ICardTypeService cardTypeService;
+
+    // Get all card types
+    @GetMapping
+    public ResponseEntity<List<CardTypeResponseDto>> getAllCardTypes() {
+        return ResponseEntity.ok(cardTypeService.getAllCardTypes());
+    }
 
     // Add a new card type
     @PostMapping

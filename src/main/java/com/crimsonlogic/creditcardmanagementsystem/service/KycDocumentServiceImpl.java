@@ -2,6 +2,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.KycDocumentResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Admin;
 import com.crimsonlogic.creditcardmanagementsystem.entity.BankOfficer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.KycDocument;
@@ -62,15 +63,18 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     public KycDocumentResponseDto submitDocument(KycDocumentRequestDto requestDto) {
         validateCustomer(requestDto.getCustomerId());
 
-        String currentUserId = currentUserContext.getCurrentUserId();
+        if (currentUserContext != null) {
+            String currentUserId = currentUserContext.getCurrentUserId();
+            if (currentUserId != null) {
+                Customer customer = customerRepository.findById(requestDto.getCustomerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Customer not found with ID: " + requestDto.getCustomerId()));
 
-        Customer customer = customerRepository.findById(requestDto.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Customer not found with ID: " + requestDto.getCustomerId()));
-
-        if (!customer.getUserId().equals(currentUserId)) {
-            throw new AccessDeniedException(
-                    "You are not authorized to submit KYC documents for this customer");
+                if (!customer.getUserId().equals(currentUserId)) {
+                    throw new AccessDeniedException(
+                            "You are not authorized to submit KYC documents for this customer");
+                }
+            }
         }
 
         DocumentValidationUtil.validate(
@@ -104,18 +108,39 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
     public KycDocumentResponseDto getDocumentById(String kycDocumentId) {
         KycDocument document = kycDocumentRepository.findById(kycDocumentId)
                 .orElseThrow(() -> new ResourceNotFoundException("KYC Document not found with ID: " + kycDocumentId));
+
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(document.getCustomerId());
+        }
+
         return convertToResponseDto(document);
     }
 
     @Override
     public List<KycDocumentResponseDto> getAllDocuments() {
-        return kycDocumentRepository.findAll().stream()
+        List<KycDocument> documents = kycDocumentRepository.findAll();
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            String officerBranch = currentUserContext.getCurrentOfficerBranchCode();
+            if (officerBranch != null) {
+                documents = documents.stream()
+                        .filter(doc -> {
+                            Customer customer = customerRepository.findById(doc.getCustomerId()).orElse(null);
+                            return customer != null && customer.getBranchCode() != null
+                                    && customer.getBranchCode().equalsIgnoreCase(officerBranch);
+                        })
+                        .collect(Collectors.toList());
+            }
+        }
+        return documents.stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<KycDocumentResponseDto> getDocumentsByCustomerId(String customerId) {
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(customerId);
+        }
         return kycDocumentRepository.findByCustomerId(customerId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -127,13 +152,15 @@ public class KycDocumentServiceImpl implements IKycDocumentService {
             String customerBranch = customer.getBranchCode();
 
             if (officerBranch == null || customerBranch == null
-                    || !officerBranch.equals(customerBranch)) {
+                    || !officerBranch.equalsIgnoreCase(customerBranch)) {
                 throw new AccessDeniedException(
                         "Bank officer is only authorized to verify or reject KYC documents for customers in their own branch");
             }
+        } else if (actingStaff instanceof Admin || (currentUserContext != null && currentUserContext.isAdmin())) {
+            // Admin is central/system-wide and exempt from branch restrictions
         } else {
             throw new AccessDeniedException(
-                    "Only Bank Officer is authorized to verify or reject KYC documents");
+                    "Only Admin or Bank Officer is authorized to verify or reject KYC documents");
         }
     }
 

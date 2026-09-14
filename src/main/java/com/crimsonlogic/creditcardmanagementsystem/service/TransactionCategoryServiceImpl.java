@@ -8,6 +8,9 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionCategor
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class TransactionCategoryServiceImpl implements ITransactionCategoryService {
 
@@ -48,6 +51,14 @@ public class TransactionCategoryServiceImpl implements ITransactionCategoryServi
                 );
 
         return convertToResponseDto(category);
+    }
+
+    @Override
+    public List<TransactionCategoryResponseDto> getAllCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     private TransactionCategoryResponseDto convertToResponseDto(TransactionCategory category) {

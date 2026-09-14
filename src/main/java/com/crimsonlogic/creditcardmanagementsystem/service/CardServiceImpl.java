@@ -126,6 +126,21 @@ public class CardServiceImpl implements ICardService {
     }
 
     @Override
+    public List<CardResponseDto> getAllCards() {
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            String officerBranch = currentUserContext.getCurrentOfficerBranchCode();
+            if (officerBranch != null) {
+                return cardRepository.findByCustomer_BranchCode(officerBranch).stream()
+                        .map(this::convertToResponseDto)
+                        .collect(Collectors.toList());
+            }
+        }
+        return cardRepository.findAll().stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public CardResponseDto getCardById(String cardId) {
 
         Card card = cardRepository.findById(cardId)
@@ -135,7 +150,8 @@ public class CardServiceImpl implements ICardService {
                         )
                 );
 
-        if (card.getCustomer() != null) {
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
             currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
         }
 
@@ -144,7 +160,10 @@ public class CardServiceImpl implements ICardService {
 
     @Override
     public List<CardResponseDto> getCardsByCustomerId(String customerId) {
-        currentUserContext.assertCustomerOwnership(customerId);
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(customerId);
+            currentUserContext.assertCustomerOwnership(customerId);
+        }
         List<Card> cards = cardRepository.findByCustomer_CustomerId(customerId);
         return cards.stream()
                 .map(this::convertToResponseDto)
@@ -166,12 +185,19 @@ public class CardServiceImpl implements ICardService {
                         )
                 );
 
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
+        }
+
         CardStatus oldStatus = card.getCardStatus();
         BigDecimal oldCreditLimit = card.getCreditLimit();
 
         if (cardDto.getCustomerId() != null) {
             Customer customer = customerRepository.findById(cardDto.getCustomerId())
                     .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + cardDto.getCustomerId()));
+            if (currentUserContext != null) {
+                currentUserContext.assertCustomerBranchAccess(customer);
+            }
             card.setCustomer(customer);
         }
         if (cardDto.getCardTypeId() != null) {
@@ -236,8 +262,8 @@ public class CardServiceImpl implements ICardService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Card not found with ID: " + cardId));
 
-        if (card.getCustomer() != null) {
-            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
         }
 
         card.setPinHash(passwordEncoder.encode(pin));
@@ -295,8 +321,8 @@ public class CardServiceImpl implements ICardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
 
-        if (card.getCustomer() != null) {
-            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
         }
 
         if (card.getCardStatus() == CardStatus.CLOSED) {
@@ -336,8 +362,8 @@ public class CardServiceImpl implements ICardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
 
-        if (card.getCustomer() != null) {
-            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
         }
 
         if (card.getCardStatus() != CardStatus.BLOCKED) {
@@ -373,8 +399,8 @@ public class CardServiceImpl implements ICardService {
         Card oldCard = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
 
-        if (oldCard.getCustomer() != null) {
-            currentUserContext.assertCustomerOwnership(oldCard.getCustomer().getCustomerId());
+        if (oldCard.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(oldCard.getCustomer());
         }
 
         if (oldCard.getCardStatus() != CardStatus.LOST && oldCard.getCardStatus() != CardStatus.STOLEN) {

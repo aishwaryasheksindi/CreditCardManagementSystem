@@ -8,6 +8,9 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.MerchantRepository
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class MerchantServiceImpl implements IMerchantService {
 
@@ -54,6 +57,14 @@ public class MerchantServiceImpl implements IMerchantService {
                 );
 
         return convertToResponseDto(merchant);
+    }
+
+    @Override
+    public List<MerchantResponseDto> getAllMerchants() {
+        return merchantRepository.findAll()
+                .stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     private MerchantResponseDto convertToResponseDto(Merchant merchant) {

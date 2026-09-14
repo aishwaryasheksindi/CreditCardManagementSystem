@@ -16,11 +16,13 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.User;
 import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.exception.DuplicateResourceException;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
+import com.crimsonlogic.creditcardmanagementsystem.repository.BankOfficerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RoleRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.StaffRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.UserRepository;
 import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
+import com.crimsonlogic.creditcardmanagementsystem.utility.BranchDetails;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 
 @Service
@@ -33,6 +35,7 @@ public class UserServiceImpl implements IUserService {
     private final CurrentUserContext currentUserContext;
     private final StaffRepository staffRepository;
     private final CustomerRepository customerRepository;
+    private final BankOfficerRepository bankOfficerRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
@@ -41,7 +44,8 @@ public class UserServiceImpl implements IUserService {
                            IAuditLogService auditLogService,
                            CurrentUserContext currentUserContext,
                            StaffRepository staffRepository,
-                           CustomerRepository customerRepository) {
+                           CustomerRepository customerRepository,
+                           BankOfficerRepository bankOfficerRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -49,13 +53,24 @@ public class UserServiceImpl implements IUserService {
         this.currentUserContext = currentUserContext;
         this.staffRepository = staffRepository;
         this.customerRepository = customerRepository;
+        this.bankOfficerRepository = bankOfficerRepository;
+    }
+
+    public UserServiceImpl(UserRepository userRepository,
+                           RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder,
+                           IAuditLogService auditLogService,
+                           CurrentUserContext currentUserContext,
+                           StaffRepository staffRepository,
+                           CustomerRepository customerRepository) {
+        this(userRepository, roleRepository, passwordEncoder, auditLogService, currentUserContext, staffRepository, customerRepository, null);
     }
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
                            IAuditLogService auditLogService) {
-        this(userRepository, roleRepository, passwordEncoder, auditLogService, null, null, null);
+        this(userRepository, roleRepository, passwordEncoder, auditLogService, null, null, null, null);
     }
 
     @Override
@@ -161,19 +176,40 @@ public class UserServiceImpl implements IUserService {
         String actualName = null;
         String phoneNumber = null;
         String accountType = null;
+        String staffId = null;
+        String branchCode = null;
+        String branchName = null;
+        String branchAddress = null;
+        String accountStatus = user.getAccountStatus();
 
         var staffOpt = staffRepository.findByUserId(user.getUserId());
         if (staffOpt.isPresent()) {
-            actualName = staffOpt.get().getEmpName();
-            phoneNumber = staffOpt.get().getEmpPhone();
+            Staff staff = staffOpt.get();
+            staffId = staff.getStaffId();
+            actualName = staff.getEmpName();
+            phoneNumber = staff.getEmpPhone();
             accountType = "STAFF";
+
+            if (bankOfficerRepository != null) {
+                var officerOpt = bankOfficerRepository.findByUserId(user.getUserId());
+                if (officerOpt.isPresent()) {
+                    branchCode = officerOpt.get().getBranchCode();
+                }
+            }
         } else {
             var customerOpt = customerRepository.findByUserId(user.getUserId());
             if (customerOpt.isPresent()) {
-                actualName = customerOpt.get().getName();
-                phoneNumber = customerOpt.get().getPhoneNumber();
+                Customer customer = customerOpt.get();
+                actualName = customer.getName();
+                phoneNumber = customer.getPhoneNumber();
                 accountType = "CUSTOMER";
+                branchCode = customer.getBranchCode();
             }
+        }
+
+        if (branchCode != null) {
+            branchName = BranchDetails.getBranchName(branchCode);
+            branchAddress = BranchDetails.getBranchAddress(branchCode);
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : null;
@@ -185,7 +221,12 @@ public class UserServiceImpl implements IUserService {
                 roleName,
                 actualName,
                 phoneNumber,
-                accountType
+                accountType,
+                staffId,
+                branchCode,
+                branchName,
+                branchAddress,
+                accountStatus
         );
     }
 

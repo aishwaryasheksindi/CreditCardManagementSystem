@@ -26,6 +26,9 @@ class RiskScoreServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
     @InjectMocks
     private RiskScoreServiceImpl riskScoreService;
 
@@ -89,5 +92,41 @@ class RiskScoreServiceTest {
                 riskScoreService.createRiskScore(requestDto)
         );
         verify(riskScoreRepository, never()).save(any());
+    }
+
+    @Test
+    void testGetAllRiskScores_WhenBankOfficer_ReturnsEmptyList() {
+        when(currentUserContext.isBankOfficer()).thenReturn(true);
+        java.util.List<RiskScoreResponseDto> result = riskScoreService.getAllRiskScores();
+        assertTrue(result.isEmpty());
+        verify(riskScoreRepository, never()).findAll();
+    }
+
+    @Test
+    void testGetAllRiskScores_WhenCustomerServiceAgent_ReturnsEmptyList() {
+        when(currentUserContext.isBankOfficer()).thenReturn(false);
+        when(currentUserContext.isCustomerServiceAgent()).thenReturn(true);
+        java.util.List<RiskScoreResponseDto> result = riskScoreService.getAllRiskScores();
+        assertTrue(result.isEmpty());
+        verify(riskScoreRepository, never()).findAll();
+    }
+
+    @Test
+    void testGetRiskScoreById_WhenBankOfficer_ThrowsAccessDeniedException() {
+        when(currentUserContext.isBankOfficer()).thenReturn(true);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () ->
+                riskScoreService.getRiskScoreById("RS1001")
+        );
+        verify(riskScoreRepository, never()).findById(any());
+    }
+
+    @Test
+    void testGetRiskScoreById_WhenCustomerServiceAgent_ThrowsAccessDeniedException() {
+        when(currentUserContext.isBankOfficer()).thenReturn(false);
+        when(currentUserContext.isCustomerServiceAgent()).thenReturn(true);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () ->
+                riskScoreService.getRiskScoreById("RS1001")
+        );
+        verify(riskScoreRepository, never()).findById(any());
     }
 }

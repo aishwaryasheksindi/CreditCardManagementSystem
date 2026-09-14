@@ -9,9 +9,12 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.RiskScoreRepositor
 import com.crimsonlogic.creditcardmanagementsystem.repository.StaffRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,15 +25,18 @@ public class FraudAlertServiceImpl implements IFraudAlertService {
     private final TransactionRepository transactionRepository;
     private final RiskScoreRepository riskScoreRepository;
     private final StaffRepository staffRepository;
+    private final CurrentUserContext currentUserContext;
 
     public FraudAlertServiceImpl(FraudAlertRepository fraudAlertRepository,
                                  TransactionRepository transactionRepository,
                                  RiskScoreRepository riskScoreRepository,
-                                 StaffRepository staffRepository) {
+                                 StaffRepository staffRepository,
+                                 CurrentUserContext currentUserContext) {
         this.fraudAlertRepository = fraudAlertRepository;
         this.transactionRepository = transactionRepository;
         this.riskScoreRepository = riskScoreRepository;
         this.staffRepository = staffRepository;
+        this.currentUserContext = currentUserContext;
     }
 
     private String generateUniqueFraudAlertId() {
@@ -89,6 +95,9 @@ public class FraudAlertServiceImpl implements IFraudAlertService {
 
     @Override
     public FraudAlertResponseDto getFraudAlertById(String fraudAlertId) {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            throw new AccessDeniedException("You are not authorized to access fraud alert details");
+        }
         FraudAlert alert = fraudAlertRepository.findById(fraudAlertId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fraud alert not found with ID: " + fraudAlertId));
         return convertToResponseDto(alert);
@@ -96,6 +105,9 @@ public class FraudAlertServiceImpl implements IFraudAlertService {
 
     @Override
     public List<FraudAlertResponseDto> getAllFraudAlerts() {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            return Collections.emptyList();
+        }
         return fraudAlertRepository.findAll()
                 .stream()
                 .map(this::convertToResponseDto)
@@ -104,6 +116,9 @@ public class FraudAlertServiceImpl implements IFraudAlertService {
 
     @Override
     public List<FraudAlertResponseDto> getFraudAlertsByTransactionId(String transactionId) {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            return Collections.emptyList();
+        }
         return fraudAlertRepository.findByTransactionId(transactionId)
                 .stream()
                 .map(this::convertToResponseDto)
@@ -112,6 +127,9 @@ public class FraudAlertServiceImpl implements IFraudAlertService {
 
     @Override
     public List<FraudAlertResponseDto> getFraudAlertsByStatus(String status) {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            return Collections.emptyList();
+        }
         return fraudAlertRepository.findByStatus(status)
                 .stream()
                 .map(this::convertToResponseDto)

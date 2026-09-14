@@ -28,6 +28,19 @@ public class CustomerController {
         return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(createdCustomer);
     }
 
+    // Get all / search customers
+    @GetMapping
+    public ResponseEntity<List<CustomerResponseDto>> getAllCustomers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String email) {
+
+        List<CustomerResponseDto> customers =
+                customerService.searchCustomers(name, phoneNumber, email);
+
+        return ResponseEntity.ok(customers);
+    }
+
     // Search customers
     @GetMapping("/search")
     public ResponseEntity<List<CustomerResponseDto>> searchCustomers(

@@ -12,6 +12,8 @@ public interface ICardService {
 
     CardResponseDto addCard(CardRequestDto cardDto);
 
+    List<CardResponseDto> getAllCards();
+
     CardResponseDto getCardById(String cardId);
 
     CardResponseDto updateCard(String cardId, CardRequestDto cardDto);

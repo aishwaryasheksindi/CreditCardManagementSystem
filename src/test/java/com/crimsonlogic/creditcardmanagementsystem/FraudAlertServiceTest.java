@@ -36,6 +36,9 @@ class FraudAlertServiceTest {
     @Mock
     private StaffRepository staffRepository;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
     @InjectMocks
     private FraudAlertServiceImpl fraudAlertService;
 
@@ -87,5 +90,24 @@ class FraudAlertServiceTest {
         assertEquals("CLOSED", result.getStatus());
         assertNotNull(result.getClosedAt());
         assertEquals("STF1001", result.getInvestigatorStaffId());
+    }
+
+    @Test
+    void testGetAllFraudAlerts_WhenCustomerServiceAgent_ReturnsEmptyList() {
+        when(currentUserContext.isBankOfficer()).thenReturn(false);
+        when(currentUserContext.isCustomerServiceAgent()).thenReturn(true);
+        java.util.List<FraudAlertResponseDto> result = fraudAlertService.getAllFraudAlerts();
+        assertTrue(result.isEmpty());
+        verify(fraudAlertRepository, never()).findAll();
+    }
+
+    @Test
+    void testGetFraudAlertById_WhenCustomerServiceAgent_ThrowsAccessDeniedException() {
+        when(currentUserContext.isBankOfficer()).thenReturn(false);
+        when(currentUserContext.isCustomerServiceAgent()).thenReturn(true);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () ->
+                fraudAlertService.getFraudAlertById("FA1001")
+        );
+        verify(fraudAlertRepository, never()).findById(any());
     }
 }

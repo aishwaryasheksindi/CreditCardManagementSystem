@@ -65,7 +65,11 @@ public class CustomerServiceImpl implements ICustomerService {
     public CustomerResponseDto getCustomerById(String customerId) {
 
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
+
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(customer);
+        }
 
         return convertToResponseDto(customer);
     }
@@ -74,7 +78,11 @@ public class CustomerServiceImpl implements ICustomerService {
     public CustomerResponseDto updateCustomer(String customerId, CustomerRequestDto customerDto) {
 
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
+
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(customer);
+        }
 
         customer.setName(customerDto.getName());
         customer.setEmail(customerDto.getEmail());
@@ -123,6 +131,17 @@ public class CustomerServiceImpl implements ICustomerService {
             if (seenIds.add(c.getCustomerId())) {
                 distinctResults.add(c);
             }
+        }
+
+        // If Bank Officer, strictly filter to customers in their assigned branch
+        String officerBranch = (currentUserContext != null && currentUserContext.isBankOfficer())
+                ? currentUserContext.getCurrentOfficerBranchCode()
+                : null;
+
+        if (officerBranch != null) {
+            distinctResults = distinctResults.stream()
+                    .filter(c -> c.getBranchCode() != null && c.getBranchCode().equalsIgnoreCase(officerBranch))
+                    .collect(Collectors.toList());
         }
 
         return distinctResults.stream()

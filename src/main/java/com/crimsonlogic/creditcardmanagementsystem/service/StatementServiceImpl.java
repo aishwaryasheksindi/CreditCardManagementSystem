@@ -249,8 +249,8 @@ public class StatementServiceImpl implements IStatementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Statement not found with ID: " + statementId));
 
         cardRepository.findById(statement.getCardId()).ifPresent(card -> {
-            if (card.getCustomer() != null) {
-                currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+            if (card.getCustomer() != null && currentUserContext != null) {
+                currentUserContext.assertCustomerBranchAccess(card.getCustomer());
             }
         });
 
@@ -260,8 +260,8 @@ public class StatementServiceImpl implements IStatementService {
     @Override
     public List<StatementResponseDto> getStatementsByCardId(String cardId) {
         cardRepository.findById(cardId).ifPresent(card -> {
-            if (card.getCustomer() != null) {
-                currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+            if (card.getCustomer() != null && currentUserContext != null) {
+                currentUserContext.assertCustomerBranchAccess(card.getCustomer());
             }
         });
 
@@ -272,7 +272,20 @@ public class StatementServiceImpl implements IStatementService {
 
     @Override
     public List<StatementResponseDto> getAllStatements() {
-        return statementRepository.findAll().stream()
+        List<Statement> statements = statementRepository.findAll();
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            String officerBranch = currentUserContext.getCurrentOfficerBranchCode();
+            if (officerBranch != null) {
+                statements = statements.stream()
+                        .filter(s -> {
+                            Card card = cardRepository.findById(s.getCardId()).orElse(null);
+                            return card != null && card.getCustomer() != null && card.getCustomer().getBranchCode() != null
+                                    && card.getCustomer().getBranchCode().equalsIgnoreCase(officerBranch);
+                        })
+                        .collect(Collectors.toList());
+            }
+        }
+        return statements.stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }

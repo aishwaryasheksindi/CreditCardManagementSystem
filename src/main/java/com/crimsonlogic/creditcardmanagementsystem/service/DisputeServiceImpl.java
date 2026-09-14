@@ -11,9 +11,12 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.CustomerRepository
 import com.crimsonlogic.creditcardmanagementsystem.repository.DisputeRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionRepository;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,15 +27,18 @@ public class DisputeServiceImpl implements IDisputeService {
     private final CustomerRepository customerRepository;
     private final TransactionRepository transactionRepository;
     private final IAuditLogService auditLogService;
+    private final CurrentUserContext currentUserContext;
 
     public DisputeServiceImpl(DisputeRepository disputeRepository,
                               CustomerRepository customerRepository,
                               TransactionRepository transactionRepository,
-                              IAuditLogService auditLogService) {
+                              IAuditLogService auditLogService,
+                              CurrentUserContext currentUserContext) {
         this.disputeRepository = disputeRepository;
         this.customerRepository = customerRepository;
         this.transactionRepository = transactionRepository;
         this.auditLogService = auditLogService;
+        this.currentUserContext = currentUserContext;
     }
 
     private String generateUniqueDisputeId() {
@@ -60,6 +66,15 @@ public class DisputeServiceImpl implements IDisputeService {
         validateCustomer(requestDto.getCustomerId());
         validateTransaction(requestDto.getTransactionId());
 
+        if (currentUserContext != null) {
+            if (currentUserContext.isBankOfficer()) {
+                throw new AccessDeniedException("Bank officer is not authorized to raise disputes");
+            }
+            if (currentUserContext.hasRole("ROLE_CUSTOMER")) {
+                currentUserContext.assertCustomerOwnership(requestDto.getCustomerId());
+            }
+        }
+
         Dispute dispute = new Dispute();
         dispute.setDisputeId(generateUniqueDisputeId());
         dispute.setCustomerId(requestDto.getCustomerId());
@@ -79,11 +94,31 @@ public class DisputeServiceImpl implements IDisputeService {
     public DisputeResponseDto getDisputeById(String disputeId) {
         Dispute dispute = disputeRepository.findById(disputeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Dispute not found with ID: " + disputeId));
+        if (currentUserContext != null) {
+            if (currentUserContext.isBankOfficer()) {
+                throw new AccessDeniedException("Bank officer is not authorized to access dispute details");
+            }
+            if (currentUserContext.hasRole("ROLE_CUSTOMER")) {
+                currentUserContext.assertCustomerOwnership(dispute.getCustomerId());
+            }
+        }
         return convertToResponseDto(dispute);
     }
 
     @Override
     public List<DisputeResponseDto> getAllDisputes() {
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            return Collections.emptyList();
+        }
+        if (currentUserContext != null && currentUserContext.hasRole("ROLE_CUSTOMER")) {
+            String customerId = currentUserContext.getCurrentCustomerId();
+            if (customerId == null) {
+                return Collections.emptyList();
+            }
+            return disputeRepository.findByCustomerId(customerId).stream()
+                    .map(this::convertToResponseDto)
+                    .collect(Collectors.toList());
+        }
         return disputeRepository.findAll().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -91,6 +126,14 @@ public class DisputeServiceImpl implements IDisputeService {
 
     @Override
     public List<DisputeResponseDto> getDisputesByCustomerId(String customerId) {
+        if (currentUserContext != null) {
+            if (currentUserContext.isBankOfficer()) {
+                return Collections.emptyList();
+            }
+            if (currentUserContext.hasRole("ROLE_CUSTOMER")) {
+                currentUserContext.assertCustomerOwnership(customerId);
+            }
+        }
         return disputeRepository.findByCustomerId(customerId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -98,6 +141,9 @@ public class DisputeServiceImpl implements IDisputeService {
 
     @Override
     public List<DisputeResponseDto> getDisputesByTransactionId(String transactionId) {
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            return Collections.emptyList();
+        }
         return disputeRepository.findByTransactionId(transactionId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());

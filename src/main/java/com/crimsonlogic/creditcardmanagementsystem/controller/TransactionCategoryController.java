@@ -8,14 +8,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping({"/api/categories", "/api/transaction-categories"})
 public class TransactionCategoryController {
 
     private final ITransactionCategoryService categoryService;
 
     public TransactionCategoryController(ITransactionCategoryService categoryService) {
         this.categoryService = categoryService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TransactionCategoryResponseDto>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @PostMapping

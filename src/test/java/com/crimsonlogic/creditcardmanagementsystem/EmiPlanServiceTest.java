@@ -34,6 +34,9 @@ class EmiPlanServiceTest {
     @Mock
     private IAuditLogService auditLogService;
 
+    @Mock
+    private com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext currentUserContext;
+
     @InjectMocks
     private EmiPlanServiceImpl emiPlanService;
 

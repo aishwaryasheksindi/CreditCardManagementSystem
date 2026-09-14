@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/merchants")
 public class MerchantController {
@@ -16,6 +18,11 @@ public class MerchantController {
 
     public MerchantController(IMerchantService merchantService) {
         this.merchantService = merchantService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MerchantResponseDto>> getAllMerchants() {
+        return ResponseEntity.ok(merchantService.getAllMerchants());
     }
 
     @PostMapping

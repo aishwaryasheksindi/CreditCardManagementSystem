@@ -6,10 +6,14 @@ import com.crimsonlogic.creditcardmanagementsystem.entity.RiskScore;
 import com.crimsonlogic.creditcardmanagementsystem.exception.ResourceNotFoundException;
 import com.crimsonlogic.creditcardmanagementsystem.repository.RiskScoreRepository;
 import com.crimsonlogic.creditcardmanagementsystem.repository.TransactionRepository;
+import com.crimsonlogic.creditcardmanagementsystem.security.CurrentUserContext;
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,11 +22,20 @@ public class RiskScoreServiceImpl implements IRiskScoreService {
 
     private final RiskScoreRepository riskScoreRepository;
     private final TransactionRepository transactionRepository;
+    private final CurrentUserContext currentUserContext;
 
     public RiskScoreServiceImpl(RiskScoreRepository riskScoreRepository,
                                 TransactionRepository transactionRepository) {
+        this(riskScoreRepository, transactionRepository, null);
+    }
+
+    @Autowired
+    public RiskScoreServiceImpl(RiskScoreRepository riskScoreRepository,
+                                TransactionRepository transactionRepository,
+                                CurrentUserContext currentUserContext) {
         this.riskScoreRepository = riskScoreRepository;
         this.transactionRepository = transactionRepository;
+        this.currentUserContext = currentUserContext;
     }
 
     private String generateUniqueRiskScoreId() {
@@ -68,6 +81,9 @@ public class RiskScoreServiceImpl implements IRiskScoreService {
 
     @Override
     public RiskScoreResponseDto getRiskScoreById(String riskScoreId) {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            throw new AccessDeniedException("You are not authorized to view risk scores");
+        }
         RiskScore riskScore = riskScoreRepository.findById(riskScoreId)
                 .orElseThrow(() -> new ResourceNotFoundException("Risk score not found with ID: " + riskScoreId));
         return convertToResponseDto(riskScore);
@@ -75,6 +91,9 @@ public class RiskScoreServiceImpl implements IRiskScoreService {
 
     @Override
     public List<RiskScoreResponseDto> getAllRiskScores() {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            return Collections.emptyList();
+        }
         return riskScoreRepository.findAll()
                 .stream()
                 .map(this::convertToResponseDto)
@@ -83,6 +102,9 @@ public class RiskScoreServiceImpl implements IRiskScoreService {
 
     @Override
     public List<RiskScoreResponseDto> getRiskScoresByTransactionId(String transactionId) {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            return Collections.emptyList();
+        }
         return riskScoreRepository.findByTransactionId(transactionId)
                 .stream()
                 .map(this::convertToResponseDto)
@@ -91,6 +113,9 @@ public class RiskScoreServiceImpl implements IRiskScoreService {
 
     @Override
     public List<RiskScoreResponseDto> getRiskScoresByRiskLevel(String riskLevel) {
+        if (currentUserContext != null && (currentUserContext.isBankOfficer() || currentUserContext.isCustomerServiceAgent())) {
+            return Collections.emptyList();
+        }
         return riskScoreRepository.findByRiskLevel(riskLevel)
                 .stream()
                 .map(this::convertToResponseDto)

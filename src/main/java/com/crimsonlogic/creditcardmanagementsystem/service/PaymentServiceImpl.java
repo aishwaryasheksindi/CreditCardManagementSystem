@@ -3,6 +3,7 @@ package com.crimsonlogic.creditcardmanagementsystem.service;
 import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.PaymentResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Card;
+import com.crimsonlogic.creditcardmanagementsystem.entity.Customer;
 import com.crimsonlogic.creditcardmanagementsystem.entity.Payment;
 import com.crimsonlogic.creditcardmanagementsystem.enums.AuditAction;
 import com.crimsonlogic.creditcardmanagementsystem.enums.PaymentStatus;
@@ -94,13 +95,17 @@ public class PaymentServiceImpl implements IPaymentService {
     public PaymentResponseDto getPaymentById(String paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
-        currentUserContext.assertCustomerOwnership(payment.getCustomerId());
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(payment.getCustomerId());
+        }
         return convertToResponseDto(payment);
     }
 
     @Override
     public List<PaymentResponseDto> getPaymentsByCustomerId(String customerId) {
-        currentUserContext.assertCustomerOwnership(customerId);
+        if (currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(customerId);
+        }
         return paymentRepository.findByCustomerId(customerId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -108,6 +113,11 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Override
     public List<PaymentResponseDto> getPaymentsByCardId(String cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+        if (card.getCustomer() != null && currentUserContext != null) {
+            currentUserContext.assertCustomerBranchAccess(card.getCustomer());
+        }
         return paymentRepository.findByCardId(cardId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -115,7 +125,20 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Override
     public List<PaymentResponseDto> getAllPayments() {
-        return paymentRepository.findAll().stream()
+        List<Payment> payments = paymentRepository.findAll();
+        if (currentUserContext != null && currentUserContext.isBankOfficer()) {
+            String officerBranch = currentUserContext.getCurrentOfficerBranchCode();
+            if (officerBranch != null) {
+                payments = payments.stream()
+                        .filter(p -> {
+                            Customer customer = customerRepository.findById(p.getCustomerId()).orElse(null);
+                            return customer != null && customer.getBranchCode() != null
+                                    && customer.getBranchCode().equalsIgnoreCase(officerBranch);
+                        })
+                        .collect(Collectors.toList());
+            }
+        }
+        return payments.stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }

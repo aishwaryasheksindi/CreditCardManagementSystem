@@ -12,4 +12,6 @@ public interface ITransactionService {
     TransactionResponseDto getTransactionById(String transactionId);
 
     List<TransactionResponseDto> getTransactionsByCardId(String cardId);
+
+    List<TransactionResponseDto> getAllTransactions();
 }

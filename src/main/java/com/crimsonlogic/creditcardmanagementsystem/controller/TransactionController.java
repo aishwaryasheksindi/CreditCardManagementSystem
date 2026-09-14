@@ -33,6 +33,11 @@ public class TransactionController {
         );
     }
 
+    @GetMapping
+    public ResponseEntity<List<TransactionResponseDto>> getAllTransactions() {
+        return ResponseEntity.ok(transactionService.getAllTransactions());
+    }
+
     @GetMapping("/{transactionId}")
     public ResponseEntity<TransactionResponseDto> getTransactionById(
             @PathVariable String transactionId) {

@@ -8,6 +8,9 @@ import com.crimsonlogic.creditcardmanagementsystem.repository.CardTypeRepository
 import com.crimsonlogic.creditcardmanagementsystem.utility.IdGenerationUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class CardTypeServiceImpl implements ICardTypeService {
 
@@ -57,8 +60,15 @@ public class CardTypeServiceImpl implements ICardTypeService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Card Type not found with ID: " + cardTypeId)
                 );
-
         return convertToResponseDto(cardType);
+    }
+
+    @Override
+    public List<CardTypeResponseDto> getAllCardTypes() {
+        return cardTypeRepository.findAll()
+                .stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     private CardTypeResponseDto convertToResponseDto(CardType cardType) {
