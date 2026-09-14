@@ -1,6 +1,8 @@
 package com.crimsonlogic.creditcardmanagementsystem.controller;
 
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardActionReasonDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardActivationOtpResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardActivationRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.SetPinRequest;
@@ -107,5 +109,22 @@ public class CardController {
 
         CardResponseDto replacedCard = cardService.replaceCard(cardId, requestDto.getReason());
         return new ResponseEntity<>(replacedCard, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{cardId}/request-activation-otp")
+    public ResponseEntity<CardActivationOtpResponseDto> requestActivationOtp(
+            @PathVariable String cardId) {
+
+        CardActivationOtpResponseDto response = cardService.requestActivationOtp(cardId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{cardId}/activate")
+    public ResponseEntity<CardResponseDto> activateCard(
+            @PathVariable String cardId,
+            @Valid @RequestBody CardActivationRequestDto requestDto) {
+
+        CardResponseDto activatedCard = cardService.activateCard(cardId, requestDto);
+        return ResponseEntity.ok(activatedCard);
     }
 }

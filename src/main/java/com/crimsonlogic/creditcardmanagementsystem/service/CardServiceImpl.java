@@ -1,5 +1,7 @@
 package com.crimsonlogic.creditcardmanagementsystem.service;
 
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardActivationOtpResponseDto;
+import com.crimsonlogic.creditcardmanagementsystem.dto.CardActivationRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardBlockRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardRequestDto;
 import com.crimsonlogic.creditcardmanagementsystem.dto.CardResponseDto;
@@ -21,6 +23,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -97,7 +101,7 @@ public class CardServiceImpl implements ICardService {
         card.setCardReference(cardReference);
         card.setCustomer(customer);
         card.setCardType(cardType);
-        card.setCardStatus(cardDto.getCardStatus());
+        card.setCardStatus(CardStatus.INACTIVE);
         card.setCreditLimit(cardDto.getCreditLimit());
         card.setAvailableLimit(cardDto.getAvailableLimit());
         card.setBillingCycle(cardDto.getBillingCycle());
@@ -107,6 +111,14 @@ public class CardServiceImpl implements ICardService {
         card.setIssuanceDate(cardDto.getIssuanceDate());
 
         Card savedCard = cardRepository.save(card);
+
+        String actingUserId = currentUserContext.getCurrentUserId();
+        if (actingUserId == null) {
+            actingUserId = cardDto.getCustomerId() != null ? cardDto.getCustomerId() : "SYSTEM";
+        }
+        cardStatusHistoryService.addCardStatusHistory(
+                new CardStatusHistoryRequestDto(savedCard.getCardId(), CardStatus.INACTIVE, LocalDateTime.now(), actingUserId)
+        );
 
         auditLogService.logAction(cardDto.getCustomerId(), AuditAction.CREATE, "Card", savedCard.getCardId(), "New card issued for customer " + cardDto.getCustomerId());
 
@@ -421,6 +433,126 @@ public class CardServiceImpl implements ICardService {
                 "Card",
                 newCardId,
                 "Replacement card issued for old card " + cardId + ": " + reason
+        );
+
+        return convertToResponseDto(savedCard);
+    }
+
+    public static class OtpData {
+        private final String otp;
+        private final LocalDateTime expiresAt;
+
+        public OtpData(String otp, LocalDateTime expiresAt) {
+            this.otp = otp;
+            this.expiresAt = expiresAt;
+        }
+
+        public String getOtp() {
+            return otp;
+        }
+
+        public LocalDateTime getExpiresAt() {
+            return expiresAt;
+        }
+    }
+
+    public final Map<String, OtpData> activationOtpStore = new ConcurrentHashMap<>();
+
+    @Override
+    public CardActivationOtpResponseDto requestActivationOtp(String cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        if (card.getCustomer() != null) {
+            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        }
+
+        if (card.getCardStatus() == CardStatus.ACTIVE) {
+            throw new IllegalArgumentException("Card is already active");
+        }
+
+        if (card.getCardStatus() == CardStatus.CLOSED || card.getCardStatus() == CardStatus.LOST || card.getCardStatus() == CardStatus.STOLEN) {
+            throw new IllegalArgumentException("Card cannot be activated from status: " + card.getCardStatus());
+        }
+
+        // Mock 6-digit OTP for academic testing
+        String otp = String.format("%06d", (int) (Math.random() * 900000) + 100000);
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5);
+
+        activationOtpStore.put(cardId, new OtpData(otp, expiresAt));
+
+        String actingUserId = currentUserContext.getCurrentUserId();
+        if (actingUserId == null) {
+            actingUserId = card.getCustomer() != null ? card.getCustomer().getCustomerId() : "SYSTEM";
+        }
+
+        auditLogService.logAction(
+                actingUserId,
+                AuditAction.UPDATE,
+                "Card",
+                cardId,
+                "Activation OTP requested for card " + cardId
+        );
+
+        return new CardActivationOtpResponseDto(
+                cardId,
+                otp,
+                expiresAt,
+                "Mock activation OTP generated successfully. Valid for 5 minutes (academic simulation only)."
+        );
+    }
+
+    @Override
+    @Transactional
+    public CardResponseDto activateCard(String cardId, CardActivationRequestDto requestDto) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        if (card.getCustomer() != null) {
+            currentUserContext.assertCustomerOwnership(card.getCustomer().getCustomerId());
+        }
+
+        if (card.getCardStatus() == CardStatus.ACTIVE) {
+            throw new IllegalArgumentException("Card is already active");
+        }
+
+        if (card.getCardStatus() == CardStatus.CLOSED || card.getCardStatus() == CardStatus.LOST || card.getCardStatus() == CardStatus.STOLEN) {
+            throw new IllegalArgumentException("Card cannot be activated from status: " + card.getCardStatus());
+        }
+
+        OtpData otpData = activationOtpStore.get(cardId);
+        if (otpData == null) {
+            throw new IllegalArgumentException("No activation OTP requested for this card. Please request an OTP first.");
+        }
+
+        if (LocalDateTime.now().isAfter(otpData.getExpiresAt())) {
+            activationOtpStore.remove(cardId);
+            throw new IllegalArgumentException("Activation OTP has expired. Please request a new OTP.");
+        }
+
+        if (!otpData.getOtp().equals(requestDto.getOtp())) {
+            throw new IllegalArgumentException("Invalid activation OTP");
+        }
+
+        activationOtpStore.remove(cardId);
+        card.setCardStatus(CardStatus.ACTIVE);
+        Card savedCard = cardRepository.save(card);
+
+        String actingUserId = currentUserContext.getCurrentUserId();
+        if (actingUserId == null) {
+            actingUserId = card.getCustomer() != null ? card.getCustomer().getCustomerId() : "SYSTEM";
+        }
+
+        cardStatusHistoryService.addCardStatusHistory(
+                new CardStatusHistoryRequestDto(cardId, CardStatus.ACTIVE, LocalDateTime.now(), actingUserId)
+        );
+
+        auditLogService.logAction(
+                actingUserId,
+                AuditAction.STATUS_CHANGE,
+                "Card",
+                cardId,
+                "Card activated successfully via OTP verification"
         );
 
         return convertToResponseDto(savedCard);
